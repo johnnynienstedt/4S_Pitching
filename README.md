@@ -19,7 +19,7 @@ The effects of pitch shape are felt most heavily when the batter swings. Pitches
 
 These probabilites are then converted into an expected run value for the pitch. These values are aggregated on the pitcher-pitch type level and normalized to a mean of 100 and standard deviation of 10. They are again normalized on the pitcher level, such that a 130 Shape+ changeup and a 130 Shape+ full repertoire represent the same deviation from the mean.
 
-One of the major limitations of this model is that it is trained on all pitch data from 2021 to 2023, meaning pitchers from those season cannot be graded.
+One of the major limitations of this model is that it is trained on all pitch data from 2021 to 2023, meaning pitchers from those seasons cannot be graded.
 
 # Spot+
 The pitcher's ability to throw the ball in the correct spots.
