@@ -38,18 +38,18 @@ TBD. Potentially some sort of Pitch 1 -> Pitch 2 matrix of run values.
 The following are same-season R-squared values for other public models and for 4S.
 
 K%:
-Stuff+ - 0.39
-botStf - 0.49
-Shape+ - 0.30
+- Stuff+ - 0.39
+- botStf - 0.49
+- Shape+ - 0.30
 
 BB%:
-Location+ - 0.57
-botCmd    - 0.48
-Spot+     - 0.53
+- Location+ - 0.57
+- botCmd    - 0.48
+- Spot+     - 0.53
 
 SIERA:
-Pitching+ - 0.46
-botOvr    - 0.43
-4S+       - 0.38
+- Pitching+ - 0.46
+- botOvr    - 0.43
+- 4S+       - 0.38
 
 Of course, 4S+ is really just 2S+ at this point.
