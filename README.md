@@ -6,7 +6,7 @@ This project is an attempt to quantify and predict pitching performance by means
 # Shape+
 The physical characteristics of a pitch. Velocity, movement, and approach angles. 
 
-The effects of pitch shape are felt most heavily when the batter swings. Pitches with good shape will induce swings and misses, foul balls, and poor contact more often than those that do not. This model uses the above predictors to model the likelihood of the following eight possible results of a swing:
+The effects of pitch shape are felt most heavily when the batter swings. Pitches with better shape will induce swings and misses, foul balls, and poor contact at a higher rate. This model uses the above predictors to model the likelihood of the following eight possible results of a swing:
  - swing and miss
  - foul ball
  - ball in play
