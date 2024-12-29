@@ -35,7 +35,7 @@ The pitcher's ability to mix and match different pitch types and locations in pr
 TBD. Potentially some sort of Pitch 1 -> Pitch 2 matrix of run values.
 
 # Results
-The following are same-season R-squared values for other public models and for 4S.
+The following are same-season R-squared values for other public models and for 4S (min. 1000 pitches, roughly 1/3 full season).
 
 K%:
 - Stuff+ - 0.39
