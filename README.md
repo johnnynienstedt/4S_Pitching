@@ -6,7 +6,7 @@ This project is an attempt to quantify and predict pitching performance by means
 # Shape+
 The physical characteristics of a pitch. Velocity, movement, and approach angles. 
 
-The effects of pitch shape are felt most heavily when the batter swings. Pitches with better shape will induce swings and misses, foul balls, and poor contact at a higher rate. This model uses the above predictors to model the likelihood of the following eight possible results of a swing:
+The effects of pitch shape are felt most heavily when the batter swings. Pitches with better shape will induce swings and misses, foul balls, and poor contact at a higher rate. An XGBoost model uses the above predictors to model the likelihood of the following eight possible results of a swing:
  - swing and miss
  - foul ball
  - ball in play
@@ -19,10 +19,14 @@ The effects of pitch shape are felt most heavily when the batter swings. Pitches
 
 These probabilites are then converted into an expected run value for the pitch. These values are aggregated on the pitcher-pitch type level and normalized to a mean of 100 and standard deviation of 10. They are again normalized on the pitcher level, such that a 130 Shape+ changeup and a 130 Shape+ full repertoire represent the same deviation from the mean.
 
+One of the major limitations of this model is that it is trained on all pitch data from 2021 to 2023, meaning pitchers from those season cannot be graded.
+
 # Spot+
 The pitcher's ability to throw the ball in the correct spots.
 
-This is not a measure of command, because I am not attempting to guess where the pitcher might have been aiming when he released each pitch. I am simply grading the location of each pitch based on its expected run value in that situation (count, handedness). Happily, I had already created these run value heatmaps for my SEAGER project, so it was a simple matter to adapt them for this purpose. Given that pitch location is a notoriously high-variance statistic, I used a highly informative Bayesian model (normal prior) and updated the posterior with each pitch thrown. For pitchers with a full season's worth of pitches, the variance is only 1-2 runs, and Spot+ has a 0.4 R-squared with its future self. For pitchers with only a few hundred pitches, that predictiveness drops to about 33%.
+This is not a measure of command, because I am not attempting to guess where the pitcher might have been aiming when he released each pitch. I am simply grading the location of each pitch based on its expected run value in that situation (count, handedness). Happily, I had already created these run value heatmaps for my SEAGER project, so it was a simple matter to adapt them for this purpose. 
+
+Given that pitch location is a notoriously high-variance statistic, I used a highly informative Bayesian model (normal prior) and updated the posterior with each pitch thrown. For pitchers with a full season's worth of pitches, the variance is only 1-2 runs, and Spot+ has a 0.4 R-squared with its future self. For pitchers with only a few hundred pitches, that predictiveness drops to about 33%. The model does not grade each pitch type separately, but rather give a single grade to each pitcher for each season. As this model requires no training, grades can be given for any season with appropriate data.
 
 # Slot+
 The deceptive effects of the pitcher's arm slot (and potentially other factors)
