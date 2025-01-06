@@ -33,6 +33,8 @@ The deceptive effects of the pitcher's arm slot (and potentially other factors)
 
 This is currently in the early stages of development. Inspired by Max Bay's Dynamic Dead Zone, I am attempting to expand that work by quantifying the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. So far I have not seen any meaningful correlation to performance.
 
+In the future, I will likely also attempt to quantify the value of a unique/rare arm slot, as well as the ability to hide the baseball before release.
+
 # Sequence+
 The pitcher's ability to mix and match different pitch types and locations in proper sequence
 
