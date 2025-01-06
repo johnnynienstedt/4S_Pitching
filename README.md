@@ -31,7 +31,7 @@ Given that pitch location is a notoriously high-variance statistic, I used a hig
 # Slot+
 The deceptive effects of the pitcher's arm slot (and potentially other factors)
 
-TBD. Max Bay's work on the Dynamic Dead Zone will surely be the basis for my work here.
+This is currently in the early stages of development. Inspired by Max Bay's Dynamic Dead Zone, I am attempting to expand that work by quantifying the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. So far I have not seen any meaningful correlation to performance.
 
 # Sequence+
 The pitcher's ability to mix and match different pitch types and locations in proper sequence
