@@ -7,17 +7,15 @@ Created on Sun Aug 18 02:59:58 2024
 """
 
 #
-# Early Attempts to Quantify Release Variance (Tunneling)
-# Johnny Nienstedt 8/18
+# Early Attempts to Quantify Arm Slot Effects
+# Johnny Nienstedt 12/29/24
 #
 
 #
-# The goal here is to use established Shape+ values as well as the variance in
-# release point and release angle (potentially only veritcal) to attempt to 
-# detect tunneling and other effects. Do two pitches achieve better results
-# when they are released from the same slot? Does one pitch achieve worse
-# results when released from a different slot as the rest? How large of a 
-# diffference is required for batters to pick up on it?
+# This is the third leg of 4S Pitching. The goal of this analysis is to
+# quantify the value that pitchers gain/lose purely from their arm slot.
+# Currently this entails movement deviation, but in the future I may include
+# arm slot uniqueness, arm slot variance, or hidden ball percentage. 
 #
 
 import math
