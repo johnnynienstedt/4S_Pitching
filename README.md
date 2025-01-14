@@ -60,5 +60,10 @@ SIERA:
 
 Of course, 4S+ is really just 3S+ at this point. And one of the three is backwards.
 
+The current weights for 3S+ are:
+- 64.5% Shape+
+- 21.5% Spot+
+- 14% Slot+
+
 # Insights
 My model has Clay Holmes as the best per-inning pitcher in baseball, and Ty Blach as the worst. It expects Sonny Gray to regress the most from 2024, and Dakota Hudson to improve the most (granted, that's mostly because he had a 5.72 SIERA - a more resonable answer is Chase Anderson).
