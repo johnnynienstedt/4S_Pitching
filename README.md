@@ -31,9 +31,9 @@ Given that pitch location is a notoriously high-variance statistic, I used a hig
 # Slot+
 The deceptive effects of the pitcher's arm slot and release point.
 
-This is currently in the early stages of development. Inspired by Max Bay's Dynamic Dead Zone, I am attempting to expand that work by quantifying the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. So far I have not seen any meaningful correlation to performance.
+This is currently in development. Inspired by Max Bay's Dynamic Dead Zone, I am attempting to expand that work by quantifying the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. I have also incorporated a small slot rarity factor to account for pitchers who may create deception purely via a unique arm slot. 
 
-In the future, I will likely also attempt to quantify the value of a unique/rare arm slot, as well as the ability to hide the baseball before release.
+At this time, Slot+ holds no predictive value over raw SIERA, but does provide value on the residuals from Shape+ and Spot+. Unfortunately, that predictiveness is in the wrong direction, implying my model is valuing negative traits. I am quite confused.
 
 # Sequence+
 The pitcher's ability to mix and match different pitch types and locations in proper sequence.
@@ -41,7 +41,7 @@ The pitcher's ability to mix and match different pitch types and locations in pr
 TBD. Potentially some sort of Pitch 1 -> Pitch 2 matrix of run values.
 
 # Results
-The following are same-season R-squared values for other public models and for 4S (min. 1000 pitches, roughly 1/3 full season).
+The following are same-season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
 
 K%:
 - Stuff+ - 0.39
@@ -56,6 +56,9 @@ BB%:
 SIERA:
 - Pitching+ - 0.46
 - botOvr    - 0.43
-- 4S+       - 0.38
+- 4S+       - 0.40
 
-Of course, 4S+ is really just 2S+ at this point.
+Of course, 4S+ is really just 3S+ at this point. And one of the three is backwards.
+
+# Insights
+My model has Clay Holmes as the best per-inning pitcher in baseball, and Ty Blach as the worst. It expects Sonny Gray to regress the most from 2024, and Dakota Hudson to improve the most (granted, that's mostly because he had a 5.72 SIERA - a more resonable answer is Chase Anderson).
