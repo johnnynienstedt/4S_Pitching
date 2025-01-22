@@ -46,7 +46,7 @@ The following are same-season R-squared values for other public models and for 4
 K%:
 - Stuff+ - 0.39
 - botStf - 0.49
-- Shape+ - 0.30
+- Shape+ - 0.35
 
 BB%:
 - Location+ - 0.57
@@ -56,7 +56,7 @@ BB%:
 SIERA:
 - Pitching+ - 0.46
 - botOvr    - 0.43
-- 4S+       - 0.40
+- 4S+       - 0.41
 
 Of course, 4S+ is really just 3S+ at this point. And one of the three is backwards.
 
