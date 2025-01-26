@@ -1,7 +1,7 @@
 # 4S_Pitching
 Shape | Spot | Slot | Sequence
 
-This project is an attempt to quantify and predict pitching performance by means of four independent models which evaluate four (mostly) independent qualities of a pitcher. As of this writing, I am mostly satisifed with my work on Shape+ and Spot+, and am in the process of developing Slot+ and Sequence+.
+This project is an attempt to quantify and predict pitching performance by means of four independent models which evaluate four (mostly) independent qualities of a pitcher. As of this writing, I am mostly satisifed with my work on Shape+, Spot+, and Slot+, and am in the process of developing Sequence+.
 
 # Shape+
 The physical characteristics of a pitch as it approaches the plate. Velocity, movement, and approach angles. 
