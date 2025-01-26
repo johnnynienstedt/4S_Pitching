@@ -39,7 +39,7 @@ The pitcher's ability to mix and match different pitch types and locations in pr
 In the early stages of development. Thus far I have quantified the value of release point variance, which is significant on the pitch-type level (more tightly grouped is better). I plan to expand this with analogs of Driveline's Mix+/Match+ repertoire statistics.
 
 # Results
-The following are same-season and next season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
+The following are same season and next season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
 
 SIERA:
 - Stuff+ - 0.46 / 0.25
