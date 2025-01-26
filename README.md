@@ -17,9 +17,9 @@ The effects of pitch shape are felt most heavily when the batter swings. Pitches
      - solid
      - barrel
 
-These probabilites are then converted into an expected run value for the pitch. These values are aggregated on the pitcher-pitch type level and normalized to a mean of 100 and standard deviation of 10. They are again normalized on the pitcher level, such that a 130 Shape+ changeup and a 130 Shape+ full repertoire represent the same deviation from the mean.
+These probabilites are then converted into an expected run value for the pitch. These values are aggregated on the pitcher-pitch type level and normalized to a mean of 100 and standard deviation of 10. They are again normalized on the pitcher level, such that a 120 Shape+ changeup and a 120 Shape+ full repertoire both represent 97th percentile grades.
 
-One of the major limitations of this model is that it is trained on all pitch data from 2021 to 2023, meaning pitchers from those seasons cannot be graded.
+This model is trained on all pitch data from 2021 to 2022, meaning pitchers from those seasons cannot be graded.
 
 # Spot+
 The pitcher's ability to throw the ball in the correct spots.
@@ -31,39 +31,32 @@ Given that pitch location is a notoriously high-variance statistic, I used a hig
 # Slot+
 The deceptive effects of the pitcher's arm slot and release point.
 
-This is currently in development. Inspired by Max Bay's Dynamic Dead Zone, I am attempting to expand that work by quantifying the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. I have also incorporated a small slot rarity factor to account for pitchers who may create deception purely via a unique arm slot. 
-
-At this time, Slot+ holds no predictive value over raw SIERA, but does provide value on the residuals from Shape+ and Spot+. Unfortunately, that predictiveness is in the wrong direction, implying my model is valuing negative traits. I am quite confused.
+Inspired by Max Bay's Dynamic Dead Zone, this model quantifies the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. This model is trained on the residuals of the Shape+ model.
 
 # Sequence+
 The pitcher's ability to mix and match different pitch types and locations in proper sequence.
 
-TBD. Potentially some sort of Pitch 1 -> Pitch 2 matrix of run values.
+In the early stages of development. Thus far I have quantified the value of release point variance, which is significant on the pitch-type level (more tightly grouped is better). I plan to expand this with analogs of Driveline's Mix+/Match+ repertoire statistics.
 
 # Results
-The following are same-season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
-
-K%:
-- Stuff+ - 0.39
-- botStf - 0.49
-- Shape+ - 0.35
-
-BB%:
-- Location+ - 0.57
-- botCmd    - 0.48
-- Spot+     - 0.53
+The following are same-season and next season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
 
 SIERA:
-- Pitching+ - 0.46
-- botOvr    - 0.43
-- 4S+       - 0.41
+- Stuff+ - 0.46 / 0.25
+- botStf - 0.43 / 0.29
+- 4S+    - 0.44 / 0.28
 
-Of course, 4S+ is really just 3S+ at this point. And one of the three is backwards.
+ERA:
+- Stuff+ - 0.11 / 0.11
+- botStf - 0.16 / 0.06
+- 4S+    - 0.18 / 0.07
+
+Of course, 4S+ is really just 3S+ at this point.
 
 The current weights for 3S+ are:
-- 64.5% Shape+
-- 21.5% Spot+
-- 14% Slot+
+- 68% Shape+
+- 26% Spot+
+- 6% Slot+
 
 # Insights
-My model has Clay Holmes as the best per-inning pitcher in baseball, and Ty Blach as the worst. It expects Sonny Gray to regress the most from 2024, and Dakota Hudson to improve the most (granted, that's mostly because he had a 5.72 SIERA - a more resonable answer is Chase Anderson).
+4S+ has Michael Kopech as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alex Diaz to improve the most from 2024, and Dylan Lee to regress the most.
