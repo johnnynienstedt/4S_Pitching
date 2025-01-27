@@ -42,21 +42,21 @@ In the early stages of development. Thus far I have quantified the value of rele
 The following are same season and next season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
 
 SIERA:
-- Stuff+ - 0.46 / 0.25
-- botStf - 0.43 / 0.29
-- 4S+    - 0.44 / 0.28
+- Stuff+ - 0.46 / 0.17
+- botStf - 0.43 / 0.25
+- 4S+    - 0.44 / 0.21
 
 ERA:
-- Stuff+ - 0.11 / 0.11
-- botStf - 0.16 / 0.06
-- 4S+    - 0.18 / 0.07
+- Stuff+ - 0.11 / 0.07
+- botStf - 0.16 / 0.10
+- 4S+    - 0.18 / 0.05
 
 Of course, 4S+ is really just 3S+ at this point.
 
-The current weights for 3S+ are:
-- 68% Shape+
-- 26% Spot+
-- 6% Slot+
+The current weights (descriptive/predictive) for 3S+ are:
+- Shape+ - 32% / 86% 
+- Spot+  - 64% / 0%
+- Slot+  -  4% / 14%
 
 # Insights
-4S+ has Michael Kopech as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alex Diaz to improve the most from 2024, and Dylan Lee to regress the most.
+4S+ has Michael Kopech as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alexis Diaz to improve the most from 2024, and Dylan Lee to regress the most.
