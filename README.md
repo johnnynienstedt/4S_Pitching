@@ -54,8 +54,8 @@ ERA:
 Of course, 4S+ is really just 3S+ at this point.
 
 The current weights (descriptive/predictive) for 3S+ are:
-- Shape+ - 32% / 86% 
-- Spot+  - 64% / 0%
+- Shape+ - 39% / 86% 
+- Spot+  - 57% / 0%
 - Slot+  -  4% / 14%
 
 # Insights
