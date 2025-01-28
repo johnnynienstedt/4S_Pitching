@@ -31,7 +31,7 @@ Given that pitch location is a notoriously high-variance statistic, I used a hig
 # Slot+
 The deceptive effects of the pitcher's arm slot and release point.
 
-Inspired by Max Bay's Dynamic Dead Zone, this model quantifies the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. This model is trained on the residuals of the Shape+ model.
+Inspired by Max Bay's Dynamic Dead Zone, this model quantifies the run value of pitches based solely on their movement relative to other pitches released out of the same slot - not raw movement. As expected, the highest graded pitches include fastballs with more ride than expected, offspeed pitches with more drop, and breaking balls with more break. Interestingly, sweepers are rewarded more for the combination of lift and horizontal break than they are for break alone.
 
 # Sequence+
 The pitcher's ability to mix and match different pitch types and locations in proper sequence.
