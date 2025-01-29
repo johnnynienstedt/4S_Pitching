@@ -44,7 +44,7 @@ The following are same season and next season R-squared values for other public 
 SIERA:
 - Stuff+ - 0.46 / 0.17
 - botStf - 0.43 / 0.25
-- 4S+    - 0.44 / 0.21
+- 4S+    - 0.44 / 0.23
 
 ERA:
 - Stuff+ - 0.11 / 0.07
@@ -56,7 +56,7 @@ Of course, 4S+ is really just 3S+ at this point.
 The current weights (descriptive/predictive) for 3S+ are:
 - Shape+ - 39% / 86% 
 - Spot+  - 57% / 0%
-- Slot+  -  4% / 14%
+- Slot+  -  5% / 14%
 
 # Insights
 4S+ has Michael Kopech as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alexis Diaz to improve the most from 2024, and Dylan Lee to regress the most.
