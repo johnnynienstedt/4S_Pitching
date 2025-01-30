@@ -49,9 +49,11 @@ botStf | 0.43 | 0.25
 4S+    | 0.44 | 0.24
 
 ERA:
-- Stuff+ - 0.11 / 0.07
-- botStf - 0.16 / 0.10
-- 4S+    - 0.18 / 0.06
+Model | Same Season | Next Season
+--- | --- | --- 
+Stuff+ | 0.11 | 0.07
+botStf | 0.16 | 0.10
+4S+    | 0.18 | 0.06
 
 Of course, 4S+ is really just 3S+ at this point.
 
