@@ -64,4 +64,4 @@ The current weights (descriptive/predictive) for 4S+ are:
 - Sequence+ - 4% / 5% 
 
 # Insights
-4S+ has Josh Hader as the best per-inning pitcher in baseball, and Kyle Hendricks as the worst. It expects Hurston Waldrep to improve the most from 2024, and Nick Hernandez to regress the most.
+4S+ has Josh Hader as the best per-inning pitcher in baseball, and Kyle Hendricks as the worst. It expects Alexis Diaz to improve the most from 2024, and Robert Garcia to regress the most (in terms of SIERA).
