@@ -58,9 +58,9 @@ botStf | 0.16 | 0.10
 Of course, 4S+ is really just 3S+ at this point.
 
 The current weights (descriptive/predictive) for 3S+ are:
-- Shape+ - 39% / 88% 
-- Spot+  - 57% / 0%
-- Slot+  -  5% / 12%
+- Shape+ - 38% / 87% 
+- Spot+  - 59% / 0%
+- Slot+  -  4% / 13%
 
 # Insights
 4S+ has Josh Hader as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Hurston Waldrep to improve the most from 2024, and Nick Hernandez to regress the most.
