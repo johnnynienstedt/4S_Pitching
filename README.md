@@ -46,7 +46,7 @@ Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.46 | 0.17
 botStf | 0.43 | 0.25
-4S+    | 0.44 | 0.24
+4S+    | 0.44 | 0.23
 
 ERA:
 Model | Same Season | Next Season
