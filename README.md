@@ -28,6 +28,8 @@ This is not a measure of command, because I am not attempting to guess where the
 
 Given that pitch location is a notoriously high-variance statistic, I used a highly informative Bayesian model (normal prior) and updated the posterior with each pitch thrown. For pitchers with a full season's worth of pitches, the variance is only 1-2 runs, and Spot+ has a 0.4 R-squared with its future self. For pitchers with only a few hundred pitches, that predictiveness drops to about 33%. The model does not grade each pitch type separately, but rather gives a single grade to each pitcher for each season. As this model requires no training, grades can be given for any season with appropriate data.
 
+I recently added release point variance as a simple analog for command. This is far less descriptive than location RV, but much more predictive.
+
 # Slot+
 The deceptive effects of the pitcher's arm slot and release point.
 
@@ -36,7 +38,7 @@ Inspired by Max Bay's Dynamic Dead Zone, this model quantifies the run value of 
 # Sequence+
 The pitcher's ability to mix and match different pitch types and locations in proper sequence.
 
-In the early stages of development. Thus far I have quantified the value of release point variance, which is significant on the pitch-type level (more tightly grouped is better). I plan to expand this with analogs of Driveline's Mix+/Match+ repertoire statistics.
+In the early stages of development. Thus far I have a simple Pitch 1 -> Pitch 2 matrix of relative run values. Interestingly, repeated pitches grade out better than mixed pitches at this stage.
 
 # Results
 The following are same season and next season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
@@ -46,21 +48,20 @@ Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.46 | 0.17
 botStf | 0.43 | 0.25
-4S+    | 0.44 | 0.23
+4S+    | 0.44 | 0.22
 
 ERA:
 Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.11 | 0.07
 botStf | 0.16 | 0.10
-4S+    | 0.18 | 0.06
+4S+    | 0.19 | 0.06
 
-Of course, 4S+ is really just 3S+ at this point.
-
-The current weights (descriptive/predictive) for 3S+ are:
-- Shape+ - 38% / 87% 
-- Spot+  - 59% / 0%
-- Slot+  -  4% / 13%
+The current weights (descriptive/predictive) for 4S+ are:
+- Shape+ - 43% / 78% 
+- Spot+  - 48% / 6%
+- Slot+  -  5% / 11%
+- Sequence+ - 4% / 5% 
 
 # Insights
-4S+ has Josh Hader as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Hurston Waldrep to improve the most from 2024, and Nick Hernandez to regress the most.
+4S+ has Josh Hader as the best per-inning pitcher in baseball, and Kyle Hendricks as the worst. It expects Hurston Waldrep to improve the most from 2024, and Nick Hernandez to regress the most.
