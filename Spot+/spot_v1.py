@@ -8,96 +8,256 @@ Created on Fri Dec 27 14:51:35 2024
 
 #
 # Spot+
-#
 # Johnny Nienstedt 12/27/24
 #
 
 # 
-# This is the second leg of 4S pitching. Instead of using estimated target
-# location to evaluate command, I will simply evaluate each pitch's location
-# based on expected run value. I have no idea if this will be predictive, but
-# we shall see.
+# The second leg of my 4S Pitching model. 
+#
+# The purpose of this script is to grade pitchers' ability to throw their 
+# pitches in the correct locations. Instead of using estimated target
+# location to evaluate command, this model simply evaluates each pitch's 
+# location for expected run value (based on count, handedness, and pitch type).
 #
 
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+from numba import jit
 from scipy.stats import norm
 from matplotlib.ticker import FuncFormatter
+from scipy.spatial.distance import pdist
 
 
 
+'''
+###############################################################################
+################################# Import Data #################################
+###############################################################################
+'''
+
+# heatmaps from my SEAGER project
+league_heatmaps = np.load('league_heatmaps.npy')
+classified_pitch_data = pd.read_csv('classified_pitch_data.csv')
 
 
-league_heatmaps = np.load('/Users/johnnynienstedt/Library/Mobile Documents/com~apple~CloudDocs/Baseball Analysis/Batting Analysis/SEAGER/league_heatmaps.npy')
-classified_pitch_data = pd.read_csv('/Users/johnnynienstedt/Library/Mobile Documents/com~apple~CloudDocs/Baseball Analysis/Data/classified_pitch_data.csv')
 
+'''
+###############################################################################
+############################### Location Value ################################
+###############################################################################
+'''
 
-def loc_rv(row, league_heatmaps):
+# reformat pitch types to match my old syntax
+pitch_names = np.array([
+    'Riding Fastball', 'Fastball', 'Sinker', 'Cutter', 'Gyro Slider',
+    'Two-Plane Slider', 'Sweeper', 'Slurve', 'Curveball', 'Slow Curve', 
+    'Movement-Based Changeup', 'Velo-Based Changeup', 'Knuckleball'])
 
-    try:
-        # Get situation
-        b = int(row['balls'])
-        s = int(row['strikes'])
-        h = int(row['platoon'])
-        
-        # Input validation
-        if not (0 <= b <= 3 and 0 <= s <= 2 and 0 <= h <= 1):
-            return np.nan
-        
-        # Create location grids
-        xlist = np.linspace(-15/13.5, 15/13.5, 30) + 1/27
-        zlist = np.linspace(14/12, (14+32)/12, 35) + 1/27
-        
-        # Get pitch location
-        px = float(row['plate_x'])
-        pz = float(row['plate_z'])
-        
-        # Find nearest grid points
-        x = xlist[np.abs(xlist - px).argmin()]
-        z = zlist[np.abs(zlist - pz).argmin()]
-        
-        # Get indices for matrix
-        ix = np.where(xlist == x)[0][0]
-        iz = np.where(zlist == z)[0][0]
-        
-        # Return run value from league heatmaps
-        return float(league_heatmaps[0, b, s, h, ix, iz])
+pitch_classes = {'fastball': ['Riding Fastball', 'Fastball'],
+                 'sinker': ['Sinker'],
+                 'cutter': ['Cutter'],
+                 'slider': ['Gyro Slider', 'Two-Plane Slider', 'Sweeper'],
+                 'curveball': ['Slurve', 'Curveball', 'Slow Curve'],
+                 'changeup': ['Movement-Based Changeup', 'Velo-Based Changeup', 'Knuckleball']
+                 }
+
+classified_pitch_data['pitch_id'] = np.where(classified_pitch_data['true_pitch_type'].isin(pitch_classes['fastball']), 0, np.nan)
+classified_pitch_data['pitch_id'] = np.where(classified_pitch_data['true_pitch_type'].isin(pitch_classes['sinker']), 1, classified_pitch_data['pitch_id'])
+classified_pitch_data['pitch_id'] = np.where(classified_pitch_data['true_pitch_type'].isin(pitch_classes['cutter']), 2, classified_pitch_data['pitch_id'])
+classified_pitch_data['pitch_id'] = np.where(classified_pitch_data['true_pitch_type'].isin(pitch_classes['slider']), 3, classified_pitch_data['pitch_id'])
+classified_pitch_data['pitch_id'] = np.where(classified_pitch_data['true_pitch_type'].isin(pitch_classes['curveball']), 4, classified_pitch_data['pitch_id'])
+classified_pitch_data['pitch_id'] = np.where(classified_pitch_data['true_pitch_type'].isin(pitch_classes['changeup']), 5, classified_pitch_data['pitch_id'])
+classified_pitch_data = classified_pitch_data.dropna(subset = 'pitch_id')
+
+# pixel resolution of heatmaps
+XLIST = np.linspace(-15/13.5, 15/13.5, 30) + 1/27
+ZLIST = np.linspace(14/12, (14+32)/12, 35) + 1/27
+
+@jit(nopython=True)
+def find_nearest_idx(array, value):
+    idx = np.searchsorted(array, value, side="left")
+    if idx > 0 and (idx == len(array) or 
+        abs(value - array[idx-1]) < abs(value - array[idx])):
+        return idx-1
+    return idx
+
+def loc_rv(df, league_heatmaps):
+
+    # Convert inputs to arrays for vectorized operations
+    balls = pd.to_numeric(df['balls'], errors='coerce').astype(np.int8)
+    strikes = pd.to_numeric(df['strikes'], errors='coerce').astype(np.int8)
+    platoon = pd.to_numeric(df['platoon'], errors='coerce').astype(np.int8)
+    t = pd.to_numeric(df['pitch_id'], errors='coerce').astype(np.int8)
+    px = pd.to_numeric(df['plate_x'], errors='coerce')
+    pz = pd.to_numeric(df['plate_z'], errors='coerce')
     
-    except (ValueError, KeyError, IndexError) as e:
-        print(f"Error processing row: {e}")
-        return np.nan
+    # Create mask for valid inputs
+    valid_mask = ((balls >= 0) & (balls <= 3) & 
+                 (strikes >= 0) & (strikes <= 2) & 
+                 (platoon >= 0) & (platoon <= 1) &
+                 px.notna() & pz.notna())
+    
+    # Initialize results array
+    result = np.full(len(df), np.nan)
+    
+    # Process only valid rows
+    if not valid_mask.any():
+        return result
+        
+    # Find nearest grid points using vectorized operations
+    x_idx = np.array([find_nearest_idx(XLIST, x) for x in px[valid_mask]])
+    z_idx = np.array([find_nearest_idx(ZLIST, z) for z in pz[valid_mask]])
+    
+    # Get run values for valid entries
+    result[valid_mask] = league_heatmaps[0, 
+                                       balls[valid_mask],
+                                       strikes[valid_mask], 
+                                       t[valid_mask],
+                                       platoon[valid_mask],
+                                       5,
+                                       x_idx,
+                                       z_idx]
+    
+    return result
 
-classified_pitch_data['loc_rv'] = classified_pitch_data.apply(lambda row: loc_rv(row, league_heatmaps), axis=1)
+# Usage
+classified_pitch_data['loc_rv'] = loc_rv(classified_pitch_data, league_heatmaps)
 
 
-loc_grades = classified_pitch_data.groupby(['pitcher', 'player_name', 'game_year']).mean(numeric_only=True)['loc_rv'].reset_index()
 
+'''
+###############################################################################
+############################## Release Variance ###############################
+###############################################################################
+'''
+
+#
+# On the repertoire level this is actually a sequence effect, but it's easier
+# to just calculate them all at once.
+#
+
+def calculate_all_variances(classified_pitch_data, min_pitches=100, min_pitch_ratio=0.03, years=[2023, 2024]):
+    
+    # Filter data once for the specified year
+    year_df = classified_pitch_data[classified_pitch_data['game_year'].isin(years)]
+    
+    # Initialize DataFrame for results
+    pitcher_years = year_df[['game_year', 'pitcher']].drop_duplicates()
+    slot_variance_df = pd.DataFrame(
+        index=pd.MultiIndex.from_frame(pitcher_years[['game_year', 'pitcher']]),
+        columns=['Name', 'release_variance', 'repertoire_variance', 'pbp_variance']
+    )
+    
+    # Group by pitcher and year
+    pitcher_groups = year_df.groupby(['game_year', 'pitcher'])
+    
+    for _, row in pitcher_years.iterrows():
+        
+        try:
+            df = pitcher_groups.get_group((row['game_year'], row['pitcher']))
+        except KeyError:
+            continue
+
+        if len(df) < min_pitches:
+            continue
+        
+        # Set name
+        last, first = df['player_name'].iloc[0].split(', ')
+        slot_variance_df.loc[(row['game_year'], row['pitcher']), 'Name'] = f"{first} {last}"
+        
+        # Calculate overall release variance using combined std of horizontal and vertical angles
+        release_points = df[['release_angle_h', 'release_angle_v']].to_numpy()
+        total_std = np.sum(np.std(release_points, axis=0))
+        slot_variance_df.loc[(row['game_year'], row['pitcher']), 'release_variance'] = total_std
+        
+        # Group by pitch type
+        pitch_groups = df.groupby('true_pitch_type')
+        pitch_type_stats = []
+        
+        # Calculate per-pitch type statistics
+        for pitch_type, p_df in pitch_groups:
+            if len(p_df)/len(df) < min_pitch_ratio:
+                continue
+            
+            # Store mean release point and std for each pitch type
+            mean_release = p_df[['release_angle_h', 'release_angle_v']].mean().values
+            std_release = np.sum(p_df[['release_angle_h', 'release_angle_v']].std().values)
+            pitch_type_stats.append({
+                'pitch_type': pitch_type,
+                'mean_release': mean_release,
+                'std': std_release,
+                'count': len(p_df)
+            })
+        
+        if pitch_type_stats:
+            # Calculate repertoire variance (between pitch types)
+            # Use average pairwise distance between mean release points
+            mean_points = np.array([stat['mean_release'] for stat in pitch_type_stats])
+            if len(mean_points) > 1:
+                pairwise_distances = pdist(mean_points)
+                repertoire_variance = np.mean(pairwise_distances)
+            else:
+                repertoire_variance = 0
+            slot_variance_df.loc[(row['game_year'], row['pitcher']), 'repertoire_variance'] = repertoire_variance
+            
+            # Calculate pbp variance as weighted average of per-pitch type stds
+            total_pitches = sum(stat['count'] for stat in pitch_type_stats)
+            weighted_std = sum(stat['std'] * stat['count'] for stat in pitch_type_stats) / total_pitches
+            slot_variance_df.loc[(row['game_year'], row['pitcher']), 'pbp_variance'] = weighted_std
+    
+    return slot_variance_df
+
+slot_variance_df = calculate_all_variances(classified_pitch_data)
+
+slot_variance_df = slot_variance_df.dropna().copy()
+slot_variance_df[['release_variance', 'repertoire_variance', 'pbp_variance']] = slot_variance_df[['release_variance', 'repertoire_variance', 'pbp_variance']].astype(float)
+slot_variance_df = slot_variance_df.reset_index()
+
+classified_pitch_data = pd.merge(classified_pitch_data, slot_variance_df, on=['pitcher', 'game_year'], how='left')
+classified_pitch_data = classified_pitch_data.dropna(subset = 'release_variance')
+
+
+
+'''
+###############################################################################
+############################### Grade Pitchers ################################
+###############################################################################
+'''
+
+# group by pitcher and year
+loc_grades = classified_pitch_data.groupby(['pitcher', 'player_name', 'game_year'])[['loc_rv', 'release_variance', 'repertoire_variance', 'pbp_variance']].mean(numeric_only=True).reset_index()
 counts = classified_pitch_data.groupby(['pitcher', 'player_name', 'game_year']).size().reset_index()
 
 loc_grades['count'] = counts[0]
-loc_grades['loc_rv'] = round(-2000*(loc_grades['loc_rv'] - loc_grades['loc_rv'].mean()), 2)
+loc_grades['mean_loc'] = round(-(loc_grades['loc_rv'] - loc_grades['loc_rv'].mean()), 6)
+loc_grades['loc_rv'] = loc_grades['mean_loc']*loc_grades['count']
 
-
-
-
-# bayesian projection with weakly informative normal prior
+# bayesian regression with strongly informative normal prior
 mu = 0
 var = 1
 n = loc_grades['count']
-x = loc_grades['loc_rv']
+x = loc_grades['mean_loc']
 s = 63**2
-loc_grades['proj_loc'] = round((mu/var + n*x/s)/(1/var + n/s), 2)
-loc_grades['proj_var'] = round(1/(1/var + n/s), 2)
-loc_grades['proj_rv'] = round(loc_grades['proj_loc']/2000*loc_grades['count'], 2)
+loc_grades['proj_loc'] = round((mu/var + n*x/s)/(1/var + n/s), 6)
+loc_grades['proj_var'] = round(1/(1/var + n/s), 6)
+
+# final grades
+spot_grades = loc_grades[['game_year', 'pitcher', 'player_name', 'count', 'loc_rv', 'proj_loc', 'release_variance', 'repertoire_variance', 'pbp_variance']]
+# spot_grades.to_csv('/Spot+/spot_grades.csv')
 
 
 
+'''
+###############################################################################
+################################## Visualize ##################################
+###############################################################################
+'''
 
 def yoy(df, colname, q, verbose=False):
     
-    filtered_results = df[df['count'] > q].reset_index()
+    filtered_results = df[df['count'] > q].reset_index().sort_values(by='pitcher')
     filtered_results.dropna(subset = [colname], inplace=True)
     
     rows = []
@@ -158,42 +318,25 @@ def yoy(df, colname, q, verbose=False):
     return r**2
     
 
-r = []
-for i in np.arange(0, 2000, 100):
-    r.append(yoy(loc_grades, 'proj_rv', i))
+# r = []
+# for i in np.arange(0, 3000, 100):
+#     r.append(yoy(loc_grades, 'spot_rv', i))
     
-plt.figure()
-plt.plot(np.arange(0, 2000, 100), r)
-plt.ylim(bottom=0)
-plt.show()
-
-
+# plt.figure()
+# plt.plot(np.arange(0, 3000, 100), r)
+# plt.ylim(bottom=0)
+# plt.title('Spot RV Year to Year Correlation')
+# plt.xlabel('Minimum Number of Pitches Thrown in Each Year')
+# plt.ylabel('$R^2$ Correlation between Year 1 and Year 2 Spot RV')
+# plt.show()
 
 
 # plot prior against actual distribution
 x = np.linspace(-20, 20, 1000)
 prior = norm.pdf(x, mu, var)
 
-
-
-# plt.figure()
-# plt.hist(loc_grades['loc_rv'], 100)
-# plt.plot(x, prior*700, label = 'Prior')
-# plt.show()
-
-
-loc_grades_2024 = loc_grades.query('game_year == 2024')[['pitcher', 'proj_loc', 'count']]
-
-xRV = loc_grades_2024['proj_loc']
-xRV_mean = xRV.mean()
-xRV_std = xRV.std()
-norm_grades = ((xRV - xRV_mean)/xRV_std + 10)*10
-
-loc_grades_2024['Spot+'] = norm_grades.astype(int)
-
-
 # plot posteriors
-def plot_command(df, pitchers, include_prior = True):
+def plot_command(df, pitchers, years, include_prior = True):
     
     plt.figure()
     
@@ -202,48 +345,41 @@ def plot_command(df, pitchers, include_prior = True):
     
     if type(pitchers) == list:
         
-        for pitcher in pitchers:
+        for i, pitcher in enumerate(pitchers):
             
             name = pitcher.split(', ')[1] + ' ' +  pitcher.split(', ')[0]
             
             try:
-                index = df.query('player_name == @pitcher').index[0]
+                year = years[i]
+                index = df.query('player_name == @pitcher and game_year == @year').index[0]
                 
             except IndexError:
                 print('\n', pitcher, 'not found.')
                 
-            p = norm.pdf(x, df.loc[index, 'proj_rv'], df.loc[index, 'proj_var'])
+            p = norm.pdf(x, df.loc[index, 'proj_loc']*3000, df.loc[index, 'proj_var'])
             
-            plt.plot(x, p, label = name)
+            plt.plot(x, p, label = str(year) + ' ' + name)
             
     elif type(pitchers) == str:
         
         name = pitchers.split(', ')[1] + ' ' + pitchers.split(', ')[0]
         
         try:
-            index = df.query('player_name == @pitchers').index[0]
+            index = df.query('player_name == @pitchers and game_year == @years').index[0]
             
         except IndexError:
             print('\n', pitchers, 'not found.')
             
-        p = norm.pdf(x, df.loc[index, 'proj_rv'], df.loc[index, 'proj_var'])
+        p = norm.pdf(x, df.loc[index, 'proj_loc']*3000, df.loc[index, 'proj_var'])
         
-        plt.plot(x, p, label = name)
+        plt.plot(x, p, label = str(years) + ' ' + name)
 
-    plt.xlim(-20, 20)
+    plt.xlim(-10, 10)
     plt.ylim(bottom=0)
-    plt.title('2024 Posterior Command Distributions')
-    plt.xlabel('True Talent Command (Location RV per 2000 pitches)')
+    plt.title('Posterior Spot+ Distributions')
+    plt.xlabel('Projected Spot Runs (Location RV per 3000 pitches)')
     plt.ylabel('Frequency')
     plt.legend(loc = 'upper left')
     plt.show()
 
-
-
-loc_grades_2024.to_csv('spot_grades.csv')
-
-
-
-
-
-pitcher_grades_plus.query('count > 100').sort_values(by='2S+', ascending=False)
+# plot_command(loc_grades, ['Kirby, George', 'McKenzie, Triston'], [2024, 2024], include_prior = True)
