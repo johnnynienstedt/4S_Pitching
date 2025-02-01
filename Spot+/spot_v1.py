@@ -38,8 +38,8 @@ from scipy.spatial.distance import pdist
 '''
 
 # heatmaps from my SEAGER project
-league_heatmaps = np.load('league_heatmaps.npy')
-classified_pitch_data = pd.read_csv('classified_pitch_data.csv')
+league_heatmaps = np.load('../Data/league_heatmaps.npy')
+classified_pitch_data = pd.read_csv('/Users/johnnynienstedt/Library/Mobile Documents/com~apple~CloudDocs/Baseball Analysis/Data/classified_pitch_data.csv')
 
 
 
@@ -112,13 +112,13 @@ def loc_rv(df, league_heatmaps):
     
     # Get run values for valid entries
     result[valid_mask] = league_heatmaps[0, 
-                                       balls[valid_mask],
-                                       strikes[valid_mask], 
-                                       t[valid_mask],
-                                       platoon[valid_mask],
-                                       5,
-                                       x_idx,
-                                       z_idx]
+                                         balls[valid_mask],
+                                         strikes[valid_mask], 
+                                         t[valid_mask],
+                                         platoon[valid_mask],
+                                         5,
+                                         x_idx,
+                                         z_idx]
     
     return result
 
@@ -211,12 +211,11 @@ def calculate_all_variances(classified_pitch_data, min_pitches=100, min_pitch_ra
 
 slot_variance_df = calculate_all_variances(classified_pitch_data)
 
-slot_variance_df = slot_variance_df.dropna().copy()
 slot_variance_df[['release_variance', 'repertoire_variance', 'pbp_variance']] = slot_variance_df[['release_variance', 'repertoire_variance', 'pbp_variance']].astype(float)
 slot_variance_df = slot_variance_df.reset_index()
 
-classified_pitch_data = pd.merge(classified_pitch_data, slot_variance_df, on=['pitcher', 'game_year'], how='left')
-classified_pitch_data = classified_pitch_data.dropna(subset = 'release_variance')
+slot_data = pd.merge(classified_pitch_data, slot_variance_df, on=['pitcher', 'game_year'], how='left')
+slot_data = slot_data.dropna(subset = 'release_variance')
 
 
 
@@ -227,8 +226,8 @@ classified_pitch_data = classified_pitch_data.dropna(subset = 'release_variance'
 '''
 
 # group by pitcher and year
-loc_grades = classified_pitch_data.groupby(['pitcher', 'player_name', 'game_year'])[['loc_rv', 'release_variance', 'repertoire_variance', 'pbp_variance']].mean(numeric_only=True).reset_index()
-counts = classified_pitch_data.groupby(['pitcher', 'player_name', 'game_year']).size().reset_index()
+loc_grades = slot_data.groupby(['pitcher', 'player_name', 'game_year'])[['loc_rv', 'release_variance', 'repertoire_variance', 'pbp_variance']].mean(numeric_only=True).reset_index()
+counts = slot_data.groupby(['pitcher', 'player_name', 'game_year']).size().reset_index()
 
 loc_grades['count'] = counts[0]
 loc_grades['mean_loc'] = round(-(loc_grades['loc_rv'] - loc_grades['loc_rv'].mean()), 6)
@@ -245,7 +244,7 @@ loc_grades['proj_var'] = round(1/(1/var + n/s), 6)
 
 # final grades
 spot_grades = loc_grades[['game_year', 'pitcher', 'player_name', 'count', 'loc_rv', 'proj_loc', 'release_variance', 'repertoire_variance', 'pbp_variance']]
-# spot_grades.to_csv('/Spot+/spot_grades.csv')
+# spot_grades.to_csv('Spot+/spot_grades.csv')
 
 
 
