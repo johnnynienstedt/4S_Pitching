@@ -38,8 +38,8 @@ from scipy.spatial.distance import pdist
 '''
 
 # heatmaps from my SEAGER project
-league_heatmaps = np.load('../Data/league_heatmaps.npy')
-classified_pitch_data = pd.read_csv('/Users/johnnynienstedt/Library/Mobile Documents/com~apple~CloudDocs/Baseball Analysis/Data/classified_pitch_data.csv')
+league_heatmaps = np.load('league_heatmaps.npy')
+classified_pitch_data = pd.read_csv('classified_pitch_data.csv')
 
 
 
