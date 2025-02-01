@@ -44,7 +44,7 @@ from sklearn.model_selection import train_test_split
 ###############################################################################
 '''
 
-classified_pitch_data = pd.read_csv('/Users/johnnynienstedt/Library/Mobile Documents/com~apple~CloudDocs/Baseball Analysis/Data/classified_pitch_data.csv')
+classified_pitch_data = pd.read_csv('classified_pitch_data.csv')
 
 
 
