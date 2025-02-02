@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 29 12:34:39 2025
+
+@author: johnnynienstedt
+"""
+
+#
+# Sequence+
+# Johnny Nienstedt 1/22/24
+#
+
+# 
+# The fourth and final leg of my 4S Pitching model. 
+#
+# The purpose of this script is to quantify the value that pitchers gain/lose 
+# purely from the way their pitches play off each other in sequence. This could
+# be due not only to usage patterns, but also pitch shapes and locations. At
+# this point I have only considered usage patters, and very roughly at that.
+#
+
+# changes from V1:
+    # focus on pitch type rather than location
+    
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+
+classified_pitch_data = pd.read_csv('classified_pitch_data.csv')
+
+
+'''
+###############################################################################
+############################## Location Sequence ##############################
+###############################################################################
+'''
+
+# sort pitches sequentially
+classified_pitch_data['day'] = [i[-2:] for i in classified_pitch_data['game_date'].values]
+classified_pitch_data['month'] = [i[5:7] for i in classified_pitch_data['game_date'].values]
+
+# sort in chronological order
+sort_cols = ['game_pk', 'game_year', 'month', 'day', 'at_bat_number', 'pitch_number']
+sorted_df = classified_pitch_data.sort_values(
+    by=sort_cols,
+    ascending=True
+).reset_index(drop=True)
+
+# use same groups as Shape+
+pitch_names = np.array([
+    'Riding Fastball', 'Fastball', 'Sinker', 'Cutter', 'Gyro Slider',
+    'Two-Plane Slider', 'Sweeper', 'Slurve', 'Curveball', 'Slow Curve', 
+    'Movement-Based Changeup', 'Velo-Based Changeup', 'Knuckleball'])
+
+pitch_classes = {'fastball': ['Riding Fastball', 'Fastball'],
+                 'sinker': ['Sinker'],
+                 'breaking': ['Cutter', 'Gyro Slider', 'Two-Plane Slider', 'Sweeper', 'Slurve', 
+                            'Curveball', 'Slow Curve'],
+                 'offspeed': ['Movement-Based Changeup', 'Velo-Based Changeup', 'Knuckleball']
+                 }
+
+sorted_df['pitch_class'] = np.where(sorted_df['true_pitch_type'].isin(pitch_classes['fastball']), 'fastball', pd.NA)
+sorted_df['pitch_class'] = np.where(sorted_df['true_pitch_type'].isin(pitch_classes['sinker']), 'sinker', sorted_df['pitch_class'])
+sorted_df['pitch_class'] = np.where(sorted_df['true_pitch_type'].isin(pitch_classes['breaking']), 'breaking', sorted_df['pitch_class'])
+sorted_df['pitch_class'] = np.where(sorted_df['true_pitch_type'].isin(pitch_classes['offspeed']), 'offspeed', sorted_df['pitch_class'])
+
+# add previous location and pitch type
+cols = ['plate_x', 'plate_z', 'pitch_class']
+prev_cols = ['prev_x', 'prev_z', 'prev_pitch']
+sorted_df[prev_cols] = pd.NA
+
+locs = sorted_df.loc[:len(sorted_df) - 2, cols]
+sorted_df.loc[1:, prev_cols] = locs.values
+
+# remove first pitch of PA
+sorted_df.loc[sorted_df['pitch_number'] == 1, prev_cols] = np.nan
+
+# add two other outcomes of interest
+swing_types = ['hit_into_play', 'swinging_strike_blocked', 'swinging_strike', 'foul', 'foul_tip']
+sorted_df['called_strike'] = np.where(sorted_df['description'] == 'called_strike', 1, 0)
+sorted_df['chase'] = np.where(sorted_df['zone'] > 9, np.where(sorted_df['description'].isin(swing_types), 1, 0), np.nan)
+
+# frequency of each outcome by previous pitch
+sequence_matrices = np.empty((10, 4, 4))
+outcomes = ['foul', 'weak', 'topped', 'under', 'flr_brn', 'solid', 'barrel', 'swstr', 'called_strike', 'chase']
+for i, outcome in tqdm(enumerate(outcomes)):
+    for p1, first_pitch in enumerate(pitch_classes.keys()):
+        for p2, second_pitch in enumerate(pitch_classes.keys()):
+            mask = (sorted_df['prev_pitch'] == first_pitch) & (sorted_df['pitch_class'] == second_pitch)
+            sequence_matrices[i, p1, p2] = sorted_df.loc[mask, outcome].mean()
+
+
+# run value of each outcome
+rv = {}
+for outcome in outcomes:
+    rv[outcome] = sorted_df[sorted_df[outcome] == 1]['delta_run_exp'].mean()
+          
+sequence_matrix = pd.DataFrame(index=pitch_classes.keys(), columns=pitch_classes.keys())
+for p1, pitch_1 in enumerate(pitch_classes.keys()):
+    for p2, pitch_2 in enumerate(pitch_classes.keys()):
+        sequence_matrix.loc[pitch_1, pitch_2] = sum([-rv[outcome] * sequence_matrices[i,p1,p2] for i, outcome in enumerate(outcomes)])
+        
+# Convert sequence_matrix to dictionary for faster lookup
+sequence_matrix = sequence_matrix.sub(sequence_matrix.mean())
+sequence_dict = {
+    (idx, col): sequence_matrix.loc[idx, col]
+    for idx in sequence_matrix.index
+    for col in sequence_matrix.columns
+}
+
+# Use vectorized operation with map
+sorted_df['sequence_rv'] = list(map(
+    lambda x: sequence_dict.get((x[0], x[1]), np.nan),
+    zip(sorted_df['prev_pitch'], sorted_df['pitch_class'])
+))
+
+sequence_grades = sorted_df[sorted_df['game_year'] > 2022].groupby(['game_year', 'pitcher', 'player_name'])['sequence_rv'].mean().reset_index()
+# sequence_grades.to_csv('sequence_grades.csv')
