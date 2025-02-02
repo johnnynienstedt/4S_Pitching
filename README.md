@@ -24,7 +24,7 @@ This model is trained on all pitch data from 2021 to 2022, meaning pitchers from
 # Spot+
 The pitcher's ability to throw the ball in the correct spots.
 
-This is not a measure of command, because I am not attempting to guess where the pitcher might have been aiming when he released each pitch. I am simply grading the location of each pitch based on its expected run value in that situation (count, handedness). Happily, I had already created these run value heatmaps for my SEAGER project, so it was a simple matter to adapt them for this purpose. 
+This is not a measure of command, because I am not attempting to guess where the pitcher might have been aiming when he released each pitch. I am simply grading the location of each pitch based on its expected run value in that situation (count, pitch type, handedness). Happily, I had already created these run value heatmaps for my SEAGER project, so it was a simple matter to adapt them for this purpose. 
 
 Given that pitch location is a notoriously high-variance statistic, I used a highly informative Bayesian model (normal prior) and updated the posterior with each pitch thrown. For pitchers with a full season's worth of pitches, the variance is only 1-2 runs, and Spot+ has a 0.4 R-squared with its future self. For pitchers with only a few hundred pitches, that predictiveness drops to about 33%. The model does not grade each pitch type separately, but rather gives a single grade to each pitcher for each season. As this model requires no training, grades can be given for any season with appropriate data.
 
