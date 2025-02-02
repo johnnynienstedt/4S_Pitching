@@ -736,4 +736,4 @@ def pitcher_profile(name, year, display_mode = 'Scouting'):
 
 # top_ten(2024, starters=True)
 
-# pitcher_profile('Jacob deGrom', 2024)
+# pitcher_profile('Jacob deGrom', 2023)
