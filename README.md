@@ -48,20 +48,31 @@ Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.46 | 0.17
 botStf | 0.43 | 0.25
-4S+    | 0.44 | 0.22
+4S+    | 0.42 | 0.23
 
 ERA:
 Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.11 | 0.07
 botStf | 0.16 | 0.10
-4S+    | 0.19 | 0.06
+4S+    | 0.17 | 0.06
 
 The current weights (descriptive/predictive) for 4S+ are:
-- Shape+ - 43% / 78% 
-- Spot+  - 48% / 6%
-- Slot+  -  5% / 11%
-- Sequence+ - 4% / 5% 
+- Shape+ - 42% / 86% 
+- Spot+  - 48% / 0%
+- Slot+  -  6% / 11%
+- Sequence+ - 5% / 4% 
 
 # Insights
 4S+ has Josh Hader as the best per-inning pitcher in baseball, and Kyle Hendricks as the worst. It expects Alexis Diaz to improve the most from 2024, and Robert Garcia to regress the most (in terms of SIERA).
+
+# Run the code
+All of the code here is self contained, although you will likely need to install some dependencies. 
+
+If you would like to reproduce my resutls, follow this path:
+1. Run get_data.py to scrape and clean data from the 2021-2024 seasons (save classified_pitch_data to csv)
+2. Run each of the shape, spot, slot, and sequence scripts (save each of their grades to csv)
+3. Run 4S.py to ensure the model is returning the same correlations (save final grades to csv)
+4. Run viz.py and analyze as many pitchers as you'd like!
+
+The Spot and Slot scripts contain some visualizations of their own which display, respectively, posterior location RV distributions and slot deviation heatmaps.
