@@ -53,7 +53,7 @@ Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.46 | 0.17
 botStf | 0.43 | 0.25
-4S+    | 0.42 | 0.24
+4S+    | 0.44 | 0.24
 
 ERA:
 Model | Same Season | Next Season
@@ -63,10 +63,10 @@ botStf | 0.16 | 0.10
 4S+    | 0.17 | 0.07
 
 The current weights (descriptive/predictive) for 4S+ are:
-- Shape+:   41% / 71% 
-- Spot+:    47% /  0%
-- Slot+:     6% / 10%
-- Sequence+: 7% / 19% 
+- Shape+:   37% / 71% 
+- Spot+:    52% /  0%
+- Slot+:     4% / 10%
+- Sequence+: 6% / 19%
 
 # Insights
 4S+ has Josh Hader as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alexis Diaz to improve the most from 2024, and Robert Garcia to regress the most (in terms of SIERA).
