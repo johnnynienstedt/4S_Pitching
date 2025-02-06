@@ -46,30 +46,30 @@ The second and more robust part of this model assesses the frequency that pitche
 - Freeze: different release angle, same location
 
 # Results
-The following are same season and next season R-squared values for other public models and for 4S+ (min. 1000 pitches, roughly 1/3 full season).
+The following are same season and next season R-squared values for other public models and for 4S (min. 1000 pitches, roughly 1/3 full season).
 
 SIERA:
 Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.46 | 0.17
 botStf | 0.43 | 0.25
-4S+    | 0.44 | 0.24
+4S     | 0.44 | 0.24
 
 ERA:
 Model | Same Season | Next Season
 --- | --- | --- 
 Stuff+ | 0.11 | 0.07
 botStf | 0.16 | 0.10
-4S+    | 0.17 | 0.07
+4S     | 0.17 | 0.07
 
 The current weights (descriptive/predictive) for 4S+ are:
-- Shape+:   37% / 71% 
-- Spot+:    52% /  0%
-- Slot+:     4% / 10%
-- Sequence+: 6% / 19%
+- Shape+:    65% / 71% 
+- Spot+:     15% /  0%
+- Slot+:      8% / 10%
+- Sequence+: 12% / 19%
 
 # Insights
-4S+ has Josh Hader as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alexis Diaz to improve the most from 2024, and Robert Garcia to regress the most (in terms of SIERA).
+4S has Josh Hader as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alexis Diaz to improve the most from 2024, and Robert Garcia to regress the most (in terms of SIERA).
 
 # Run the code
 All of the code here is self contained, although you will likely need to install some dependencies. 
