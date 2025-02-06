@@ -138,10 +138,10 @@ sequence_grades_1 = sorted_df[sorted_df['game_year'] > 2022].groupby(['game_year
 '''
 
 # define parameters
-RA_small_radius = 0.65
-RA_large_radius = 1.45
-loc_small_radius = 0.35
-loc_large_radius = 1.80
+RA_small_radius = 0.65  # degrees
+RA_large_radius = 1.45  # degrees
+loc_small_radius = 0.35 # feet
+loc_large_radius = 1.80 # feet
 
 same_release = ((sorted_df['release_angle_h'] - sorted_df['prev_h'])**2 + (sorted_df['release_angle_v'] - sorted_df['prev_v'])**2 < RA_small_radius**2)
 diff_release = ((sorted_df['release_angle_h'] - sorted_df['prev_h'])**2 + (sorted_df['release_angle_v'] - sorted_df['prev_v'])**2 > RA_large_radius**2)
