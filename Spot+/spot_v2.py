@@ -20,10 +20,14 @@ Created on Fri Dec 27 14:51:35 2024
 # location for expected run value (based on count, handedness, and pitch type).
 #
 
+# Changes from V1:
+    # retrieved swing data for each count separately
+
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 from numba import jit
 from scipy.stats import norm
 from matplotlib.ticker import FuncFormatter
@@ -38,8 +42,328 @@ from scipy.spatial.distance import pdist
 '''
 
 # heatmaps from my SEAGER project
-league_heatmaps = np.load('league_heatmaps.npy')
 classified_pitch_data = pd.read_csv('classified_pitch_data.csv')
+
+
+
+'''
+###############################################################################
+################################ Make Heatmaps ################################
+###############################################################################
+'''
+
+# get league data for all years
+def get_league_data(pitch_data):
+    
+    ###########################################################################
+    ############################# Get League Data #############################
+    ###########################################################################
+    
+    print()
+    print('Gathering League Data')
+    print()
+    
+    # RE24 values
+    global ball_rv, strike_rv
+    ball_rv = np.zeros([4, 3])
+    strike_rv = np.zeros([4, 3])
+    
+    ball_rv[0,0] = 0.032
+    ball_rv[1,0] = 0.088
+    ball_rv[2,0] = 0.143
+    ball_rv[3,0] = 0.051
+    ball_rv[0,1] = 0.024
+    ball_rv[1,1] = 0.048
+    ball_rv[2,1] = 0.064
+    ball_rv[3,1] = 0.168
+    ball_rv[0,2] = 0.021
+    ball_rv[1,2] = 0.038
+    ball_rv[2,2] = 0.085
+    ball_rv[3,2] = 0.234
+    strike_rv[0,0] = -0.037
+    strike_rv[1,0] = -0.035
+    strike_rv[2,0] = -0.062
+    strike_rv[3,0] = -0.117
+    strike_rv[0,1] = -0.051
+    strike_rv[1,1] = -0.054
+    strike_rv[2,1] = -0.069
+    strike_rv[3,1] = -0.066
+    strike_rv[0,2] = -0.150
+    strike_rv[1,2] = -0.171
+    strike_rv[2,2] = -0.209
+    strike_rv[3,2] = -0.294
+    
+    
+    global swing_types, take_types, bunt_types, pitch_types
+    
+    swing_types = ['hit_into_play', 'foul', 'swinging_strike', 'foul_tip', 
+                    'swinging_strike_blocked', 'swinging_pitchout',
+                    'foul_pitchout']
+    take_types = ['ball', 'called_strike', 'blocked_ball', 'hit_by_pitch', 
+                  'pitchout']
+    bunt_types = ['missed_bunt', 'foul_bunt', 'foul_tip_bunt']
+    
+    pitch_types = [['FF'], ['SI'], ['FC'], ['SL', 'ST'], ['CU', 'KC', 'CS', 'SV'], ['CH', 'FO', 'FS', 'SC'], pitch_data['pitch_type'].unique()]
+    
+    z_flip = [None, 3, 2, 1, 6, 5, 4, 9, 8, 7, None, 12, 11, 14, 13]
+
+
+    # flip x-axis for left-handed hitters
+    pitch_data.loc[pitch_data['stand'] == 'L', 'plate_x'] = -pitch_data.loc[pitch_data['stand'] == 'L', 'plate_x']
+    pitch_data.loc[pitch_data['stand'] == 'L', 'zone'] = pitch_data.loc[pitch_data['stand'] == 'L', 'zone'].apply(lambda z: z_flip[int(z)])
+
+
+    # initialize data frame and array
+    league_rv = np.empty([2,4,3,7,2,13])
+    # indices are:
+        # data type (swing_rate = 0, swing_rv = 1)
+        # balls
+        # strikes
+        # pitch type (ff = 0, si = 1, ct = 2, sl = 3, cu = 4, ch = 5, all = 6)
+        # handedness (same = 0, different = 1)
+        # MLBAM zone (normalized to RHB)
+
+    #
+    # evaluate pitches in range of MLBAM zones (2.2 ft wide x 3 ft tall)
+    #            
+    
+    # get swing RV based on contact%, whiff%, and xWOBACON       
+    for j in tqdm(range(13)):
+        
+        if j < 9: zone = j + 1
+        else: zone = j + 2
+        
+        # pitches in this zone
+        z_pitches = pitch_data[pitch_data.zone == zone]
+        
+        for t in range(7):
+            
+            # pitches of this type
+            pitch_group = pitch_types[t]
+            t_pitches = z_pitches[z_pitches.pitch_type.isin(pitch_group)]
+                
+            for h in range(2):
+                
+                # pitches in this platoon matchup
+                if h == 0:
+                    h_pitches = t_pitches[t_pitches.stand == t_pitches.p_throws]
+                        
+                if h == 1:
+                    h_pitches = t_pitches[t_pitches.stand != t_pitches.p_throws]
+            
+                # calculated run value for swings, based on RE24
+                for s in range(3):
+                    
+                    s_pitches = h_pitches[h_pitches['strikes'] == s]
+                    
+                    for b in range(4):
+                
+                        pitches = s_pitches[s_pitches['balls'] == b]
+                        
+                        n = len(pitches)
+                        
+                        # pitches swung at
+                        swings = pitches[pitches.description.isin(swing_types)]
+                        
+                        # number of swings
+                        n_swings = len(swings)
+                        
+                        if n != 0:
+                            swing_rate = n_swings/n
+                        else:
+                            swing_rate = 0
+                        
+                        league_rv[0,b,s,t,h,j] = swing_rate
+                        
+                        # contact & foul ball percentage
+                        if n_swings != 0:
+                            contact = sum(swings.description == 'hit_into_play')/n_swings
+                            foul = sum(swings.description == 'foul')/n_swings
+                            whiff = 1 - contact - foul
+                        else:
+                            contact, foul, whiff = 0, 0, 0
+                                    
+                        # observed run value on balls in play
+                        if contact != 0:
+                            xwobacon = swings.loc[swings.description == 'hit_into_play','estimated_woba_using_speedangle'].fillna(0).mean()
+                            bip_rv = 0.6679*xwobacon - 0.192
+                        else:
+                            bip_rv  = 0
+                        
+                        if s == 2:
+                            swing_rv = (contact*bip_rv + whiff*strike_rv[b,s])
+                        else:
+                            swing_rv = (contact*bip_rv + (whiff + foul)*strike_rv[b,s])
+                        
+                        league_rv[1,b,s,t,h,j] = swing_rv
+    
+    ###########################################################################
+    ############################## Make Heatmaps ##############################
+    ###########################################################################
+    
+    print()
+    print()
+    print('Making Heatmaps')
+    print()
+    
+    # strike zone dimensions
+    zone_height = 35
+    zone_width = 30
+    
+    # number of iterations for numerical solution
+    n_iter = 5
+    
+    # create zones
+    x0, y0 = 0, 0
+    x1, y1 = 5, 6
+    x15, y15 = 9, 10
+    x2, y2 = 12, 14
+    x25, y25 = 15, 18
+    x3, y3 = 18, 22
+    x35, y35 = 21, 26
+    x4, y4 = 25, 30
+    x5, y5 = 30, 35
+    
+    # Initialize arrays
+    league_heatmaps = np.empty([n_iter + 1, 5, 4, 3, 7, 2, zone_width, zone_height])
+    # 1st dimension is for intermediate heatmaps
+    # 2nd dimension is now:
+        # data type (xrv = 0, swing_rate = 1, swing_rv = 2, trv = 3, cs = 4)
+    # will be reshaped to (5, 4, 3, 7, 2, n, zw, zh)
+         
+    #
+    # merge zone data to make swing heatmaps
+    #   
+ 
+    # initial conditions
+    z1 = league_rv[:,:,:,:,:,0]
+    z2 = league_rv[:,:,:,:,:,1]
+    z3 = league_rv[:,:,:,:,:,2]
+    z4 = league_rv[:,:,:,:,:,3]
+    z5 = league_rv[:,:,:,:,:,4]
+    z6 = league_rv[:,:,:,:,:,5]
+    z7 = league_rv[:,:,:,:,:,6]
+    z8 = league_rv[:,:,:,:,:,7]
+    z9 = league_rv[:,:,:,:,:,8]
+    z11 = league_rv[:,:,:,:,:,9]
+    z12 = league_rv[:,:,:,:,:,10]
+    z13 = league_rv[:,:,:,:,:,11]
+    z14 = league_rv[:,:,:,:,:,12]
+    
+    league_map = np.empty([zone_width, zone_height, 2, 4, 3, 7, 2])
+    
+    # initial condition set/reset function
+    def set_conds(rv_map, reset = False):
+        
+        if not reset:
+            # Set the initial conditions by zone
+            rv_map[x1:x2, y3:y4] = z1
+            rv_map[x2:x3, y3:y4] = z2
+            rv_map[x3:x4, y3:y4] = z3
+            rv_map[x1:x2, y2:y3] = z4
+            rv_map[x2:x3, y2:y3] = z5
+            rv_map[x3:x4, y2:y3] = z6
+            rv_map[x1:x2, y1:y2] = z7
+            rv_map[x2:x3, y1:y2] = z8
+            rv_map[x3:x4, y1:y2] = z9
+            rv_map[x0:x1, y25:y5] = z11
+            rv_map[x1:x25, y4:y5] = z11
+            rv_map[x25:x5, y4:y5] = z12
+            rv_map[x4:x5, y25:y5] = z12
+            rv_map[x0:x1, y0:y25] = z13
+            rv_map[x1:x25, y0:y1] = z13
+            rv_map[x25:x5, y0:y1] = z14
+            rv_map[x4:x5, y0:y25] = z14
+        
+        # reset boundary conditions and maintain mean
+        if reset: 
+            
+            # boundary conditions
+            rv_map[x0:x0,y25:y5] = z11
+            rv_map[x0:x25,y5:y5] = z11
+            
+            rv_map[x25:x5,y5:y5] = z12
+            rv_map[x5:x5,y25:y5] = z12
+            
+            rv_map[x0:x25,y0:y0] = z13
+            rv_map[x0:x0,y0:y25] = z13
+            
+            rv_map[x5:x5,y0:y25] = z14
+            rv_map[x25:x5,y0:y0] = z14
+            
+            # maintain middle of each zone
+            rv_map[x15:x15,y35:y35] = z1
+            rv_map[x25:x25,y35:y35] = z2
+            rv_map[x35:x35,y35:y35] = z3
+            rv_map[x15:x15,y25:y25] = z4
+            rv_map[x25:x25,y25:y25] = z5
+            rv_map[x35:x35,y25:y25] = z6
+            rv_map[x15:x15,y15:y15] = z7
+            rv_map[x25:x25,y15:y15] = z8
+            rv_map[x35:x35,y15:y15] = z9
+        
+        return rv_map
+    
+    
+    # set initial conditions
+    league_map = np.empty([zone_width, zone_height, 2, 4, 3, 7, 2])
+    league_map = set_conds(league_map)
+    league_heatmaps[0,1:3] = np.transpose(league_map, (2,3,4,5,6,0,1))
+    
+    # make heatmap using np.roll method
+    for n in range(n_iter):
+        league_map = 0.25*(np.roll(league_map, zone_height - 1, axis = 1) + np.roll(league_map, 1 - zone_height, axis = 1) + np.roll(league_map, zone_width - 1, axis = 0) + np.roll(league_map, 1 - zone_width, axis = 0))
+        league_map = set_conds(league_map, reset = True)       
+        league_heatmaps[n+1, 1:3] = np.transpose(league_map, (2,3,4,5,6,0,1))
+
+    league_heatmaps = np.transpose(league_heatmaps, (1,2,3,4,5,0,6,7))
+
+
+    # next get called strike % (more granular than swing rv)
+    for X in tqdm(range(30)):
+        x = round((X - 15)/13.5, 2)
+        xx = round((X - 14)/13.5, 2)
+        for Z in range(35):
+            z = round((Z*32/35 + 14)/12, 2)
+            zz = round(((Z + 1)*32/35 + 14)/12, 2)
+            
+            pitches = pitch_data[(pitch_data.plate_x >= x) &
+                                  (pitch_data.plate_x < xx) &
+                                  (pitch_data.plate_z >= z) &
+                                  (pitch_data.plate_z < zz)]
+            
+            # pitches taken
+            takes = pitches[pitches.description.isin(take_types)]
+            
+            # percentage of taken pitches called stikes
+            n_takes = len(takes)
+            cs = sum(takes.description == 'called_strike')/n_takes
+            
+            league_heatmaps[4,:,:,:,:,n_iter,X,Z] = cs
+
+            # different values of TRV for each count
+            for s in range(3):
+                for b in range(4):
+                    
+                    # and calculate TRV using RE24
+                    take_rv = cs*strike_rv[b,s] + (1 - cs)*ball_rv[b,s]
+                    
+                    # append to array
+                    league_heatmaps[3,b,s,:,:,n_iter,X,Z] = take_rv
+                    
+                        
+    # now calculate expected RV
+    swing_rate = league_heatmaps[1]
+    take_rate = 1 - swing_rate
+    swing_rv = league_heatmaps[2]
+    take_rv = league_heatmaps[3]
+    
+    xrv = swing_rate*swing_rv + take_rate*take_rv
+    league_heatmaps[0] = xrv
+                  
+    return league_heatmaps
+
+league_heatmaps = get_league_data(classified_pitch_data)
 
 
 
@@ -319,7 +643,7 @@ def yoy(df, colname, q, verbose=False):
 
 # r = []
 # for i in np.arange(0, 3000, 100):
-#     r.append(yoy(loc_grades, 'spot_rv', i))
+#     r.append(yoy(loc_grades, 'loc_rv', i))
     
 # plt.figure()
 # plt.plot(np.arange(0, 3000, 100), r)
