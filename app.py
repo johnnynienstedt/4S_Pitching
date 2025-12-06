@@ -2550,7 +2550,7 @@ def main():
 
             st.markdown("---")
             st.header("Display Options")
-            display_mode = st.radio("Visualization Mode:", options=['Shape', 'Scouting'], index=0)
+            display_mode = st.radio("Visualization Mode:", options=['Shape', 'Scouting'], index=0, help="Scouting: Pitch velo, movement, scouting grade\nShape: Usage and Shape+ split by handedness")
             quality = st.radio("Image Quality:", options=['high', 'low'], index=0)
 
             st.markdown("---")
@@ -2619,10 +2619,9 @@ def main():
             # No analysis yet
             st.info("👈 Select a pitcher from the sidebar and click 'Analyze Pitcher' to begin")
             st.subheader("Dataset Overview")
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             col1.metric("Total Pitchers", len(pitchers))
             col2.metric("Total Pitches", len(all_pitch_data))
-            col3.metric("Unique Pitch Types", all_pitch_data['TaggedPitchType'].nunique())
 
     except FileNotFoundError:
         st.error("❌ Data file 'Data/CWS ML Analyst Dataset.csv' not found. Please ensure it's in the correct directory.")
