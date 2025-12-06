@@ -42,7 +42,7 @@ st.set_page_config(
 st.markdown("""
     <style>
     .main-header {
-        font-size: 6.5rem;
+        font-size: 65rem;
         font-weight: bold;
         text-align: center;
         padding: 1rem 0;
