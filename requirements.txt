@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+matplotlib
+joblib
+numba
+Pillow
+scipy
+unidecode
