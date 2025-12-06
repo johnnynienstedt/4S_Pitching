@@ -2534,14 +2534,14 @@ def main():
             st.header("Display Options")
             display_mode = st.radio(
                 "Visualization Mode:",
-                options=['Shape', 'Scouting', 'Breakdown'],
+                options=['Shape', 'Scouting'],
                 index=0,
                 help="Choose how to display the pitcher's grades"
             )
             
             quality = st.radio(
                 "Image Quality:",
-                options=['low', 'high'],
+                options=['high', 'low'],
                 index=0,
                 help="Higher quality takes longer to render"
             )
