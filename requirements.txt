@@ -8,3 +8,4 @@ Pillow
 scipy
 unidecode
 ipython
+cloudpickle
