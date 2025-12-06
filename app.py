@@ -13,7 +13,6 @@ Created on Wed Nov  5 22:07:35 2025
 
 
 
-import base64
 import joblib
 import numpy as np
 import pandas as pd
@@ -30,9 +29,6 @@ from scipy.spatial.distance import pdist
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
-def load_image_as_base64(path):
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
 
 # Page configuration
 st.set_page_config(
@@ -2538,19 +2534,8 @@ def analyze_pitcher(all_pitch_data, pitcher):
 
 # Main app
 def main():
-
-    logo_base64 = load_image_as_base64("Data/CWS_logo.png")
-
-    st.markdown(
-        f"""
-        <h1 style="display: flex; align-items: center; gap: 10px; margin: 0;">
-            <img src="data:image/png;base64,{logo_base64}" 
-                 style="height: 80px; vertical-align: middle;">
-            4S Pitching Model
-        </h1>
-        """,
-        unsafe_allow_html=True
-    )
+    
+    st.markdown("# 4S Pitching Dashboard")
     
     try:
         # Load data
