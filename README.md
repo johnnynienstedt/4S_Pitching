@@ -46,7 +46,7 @@ The second and more robust part of this model assesses the frequency that pitche
 - Freeze: different release angle, same location
 
 # Results
-The following are same season and next season R-squared values for SIERA (min. 1000 pitches, roughly 1/3 full season):
+The table below shows same-season and next-season R-squared values for SIERA (min. 1000 pitches, roughly 1/3 full season):
 
 Model | Same Season | Next Season
 --- | --- | --- 
