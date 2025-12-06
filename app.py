@@ -12,6 +12,8 @@ Created on Wed Nov  5 22:07:35 2025
 #
 
 
+
+import base64
 import joblib
 import numpy as np
 import pandas as pd
