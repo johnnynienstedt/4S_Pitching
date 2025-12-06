@@ -2104,7 +2104,6 @@ def profile_viz(pitcher_grades, shape_by_hand, classified_pitch_data, no_slot, d
             
             
         ax_cred.axis('off')
-        ax_cred.text(0.5, 0.3, 'Data and visualization are property of Major League Baseball and the Chicago White Sox.', ha='center', va='center', fontsize=10)
         plt.show()
         return
         
@@ -2591,7 +2590,10 @@ def main():
                     st.pyplot(fig)
                     plt.close(fig)
                 else:
-                    st.warning("Could not generate profile visualization")
+                    if results["query_grades"]["count"].values[0] == 1:
+                        st.warning("This pitchew only threw one pitch; multiple pitches are needed to calculate Spot+ and Sequence+.")
+                    else:
+                        st.warning("Could not generate profile visualization.")
 
             rep_rhh, rep_lhh = pitch_splits(classified_query_data)
             with tab2:
