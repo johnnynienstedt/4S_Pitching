@@ -54,8 +54,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-all_pitch_data = pd.read_csv('CWS ML Analyst Dataset.csv')
-
 def clean_data(data, pitcher):
     
     '''
