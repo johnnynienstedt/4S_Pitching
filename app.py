@@ -42,7 +42,7 @@ st.set_page_config(
 st.markdown("""
     <style>
     .main-header {
-        font-size: 65rem;
+        font-size: 6.5rem;
         font-weight: bold;
         text-align: center;
         padding: 1rem 0;
@@ -2535,7 +2535,6 @@ def analyze_pitcher(all_pitch_data, pitcher):
 # Main app
 def main():
     st.markdown('<p class="main-header">⚾ Pitcher Analysis Dashboard</p>', unsafe_allow_html=True)
-    st.markdown("---")
 
     try:
         # Load data
@@ -2553,9 +2552,10 @@ def main():
         # Sidebar controls
         with st.sidebar:
             selected_pitcher = st.selectbox("Choose a pitcher:", options=pitchers, index=0)
+            analyze_button = st.button("Run 4S Analysis", type="primary", use_container_width=True)
+            st.markdown("---")
             display_mode = st.radio("Visualization Mode:", options=['Shape', 'Scouting'], index=0, help='Toggle stats displayed in repertoire table')
-            quality = st.radio("Image Quality:", options=['high', 'low'], index=0)
-            analyze_button = st.button("🔍 Analyze Pitcher", type="primary", use_container_width=True)
+            quality = 'high'
         
         # Run analysis only when button is clicked
         if analyze_button:
