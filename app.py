@@ -6,11 +6,10 @@ Created on Wed Nov  5 22:07:35 2025
 """
 
 #
-# Modified 4S - CWS data with Streamlit functionality
+# Modified 4S - CHW
 #
 # Johnny Nienstedt 12/5/2025
 #
-
 
 
 import joblib
@@ -28,6 +27,9 @@ from matplotlib.colors import LinearSegmentedColormap
 from scipy.spatial.distance import pdist
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
+
+
+
 # Page configuration
 st.set_page_config(
     page_title="4S Pitching Dashboard",
@@ -40,8 +42,9 @@ st.set_page_config(
 st.markdown("""
     <style>
     .main-header {
-        font-size: 6.5rem;
+        font-size: 2.5rem;
         font-weight: bold;
+        color: #FE5A1D;
         text-align: center;
         padding: 1rem 0;
     }
@@ -51,7 +54,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+all_pitch_data = pd.read_csv('CWS ML Analyst Dataset.csv')
+
 def clean_data(data, pitcher):
+    
+    '''
+    Classifying pitches...
+    '''
     
     if ', ' not in pitcher:
         pitcher = pitcher.split(' ')[1] + ', ' + pitcher.split(' ')[0]
@@ -196,11 +205,11 @@ def clean_data(data, pitcher):
                                        ).reset_index(drop=True)
     
     
-    '''
-    ###############################################################################
-    ########################## Calculate More Parameters ##########################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ########################## Calculate More Parameters ##########################
+    # ###############################################################################
+    # '''
     
     # platoon rate
     sorted_df['platoon'] = np.where(sorted_df['p_throws'] == sorted_df['stand'], 0, 1)
@@ -228,11 +237,11 @@ def clean_data(data, pitcher):
     
 
     
-    '''
-    ###############################################################################
-    ############################# Classify Pitch Types ############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ############################# Classify Pitch Types ############################
+    # ###############################################################################
+    # '''
     
     classified_pitch_data = sorted_df.copy()
     
@@ -354,11 +363,11 @@ def clean_data(data, pitcher):
     
     
     
-    '''
-    ###############################################################################
-    ########################### Add Fastball Baselines ############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ########################### Add Fastball Baselines ############################
+    # ###############################################################################
+    # '''
 
     fastballs = {'Riding Fastball', 'Fastball', 'Sinker'}
 
@@ -420,6 +429,10 @@ def clean_data(data, pitcher):
 
 def grade_shape(classified_pitch_data):
     
+    '''
+    Grading Shape...
+    '''
+    
     # assign run values for each outcome
     rv = joblib.load('Data/outcome_rvs')
 
@@ -466,11 +479,11 @@ def grade_shape(classified_pitch_data):
     # grading_data['shape_rv'] = grading_data['shape_rv'] - shape_rv_mean
 
 
-    '''
-    ###############################################################################
-    ########################### By Type and Handedness ############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ########################### By Type and Handedness ############################
+    # ###############################################################################
+    # '''
 
     grouped = grading_data.groupby(['pitcher', 'true_pitch_type', 'platoon'])[display_cols]
     repertoire = grouped.mean().reset_index().copy()
@@ -501,11 +514,11 @@ def grade_shape(classified_pitch_data):
 
 
 
-    '''
-    ###############################################################################
-    ################################ By Pitch Type ################################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ################################ By Pitch Type ################################
+    # ###############################################################################
+    # '''
 
     grouped = grading_data.groupby(['pitcher', 'true_pitch_type'])[display_cols]
     pt_shape_grades = grouped.mean().reset_index().copy()
@@ -520,11 +533,11 @@ def grade_shape(classified_pitch_data):
 
 
 
-    '''
-    ###############################################################################
-    ############################### By Pitcher Only ###############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ############################### By Pitcher Only ###############################
+    # ###############################################################################
+    # '''
     
     grouped = grading_data.groupby(['pitcher'])[display_cols]
     shape_grades = grouped.mean().reset_index().copy()
@@ -547,6 +560,10 @@ def grade_shape(classified_pitch_data):
     return shape_grades, repertoire
 
 def grade_spot(classified_pitch_data):
+    
+    '''
+    Grading Spot...
+    '''
     
     league_heatmaps = np.load('Data/league_heatmaps.npy')
         
@@ -623,11 +640,11 @@ def grade_spot(classified_pitch_data):
     
     
         
-    '''
-    ###############################################################################
-    ############################## Release Variance ###############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ############################## Release Variance ###############################
+    # ###############################################################################
+    # '''
     
     #
     # On the repertoire level this is actually a sequence effect, but it's easier
@@ -709,11 +726,11 @@ def grade_spot(classified_pitch_data):
     
     
     
-    '''
-    ###############################################################################
-    ############################### Grade Pitcher #################################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ############################### Grade Pitcher #################################
+    # ###############################################################################
+    # '''
 
     grade_cols = ['loc_rv', 'release_variance', 'repertoire_variance', 'pbp_variance']
     meta_cols = ['game_year', 'player_name']
@@ -772,10 +789,14 @@ def grade_spot(classified_pitch_data):
 def grade_slot(classified_pitch_data):
     
     '''
-    ###############################################################################
-    ############################### Slot Deviation ################################
-    ###############################################################################
+    Grading Slot...
     '''
+    
+    # '''
+    # ###############################################################################
+    # ############################### Slot Deviation ################################
+    # ###############################################################################
+    # '''
     
     # make clusters
     clustered_data = classified_pitch_data.dropna(subset='arm_angle').copy()
@@ -824,22 +845,22 @@ def grade_slot(classified_pitch_data):
 
 
 
-    '''
-    ###############################################################################
-    ################################# Slot Rarity #################################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ################################# Slot Rarity #################################
+    # ###############################################################################
+    # '''
 
     slot_frequencies = joblib.load('Data/slot_frequencies')
     rel_data['slot_rarity'] = rel_data['slot_cluster'].map(slot_frequencies)
 
 
 
-    '''
-    ###############################################################################
-    ################################ Grade Pitcher ################################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ################################ Grade Pitcher ################################
+    # ###############################################################################
+    # '''
     
     def calculate_diff_rv(rel_data, valid_clusters, eff_dict):
         
@@ -907,6 +928,10 @@ def grade_slot(classified_pitch_data):
 
 def grade_sequence(classified_pitch_data):
         
+    '''
+    Grading Sequence...
+    '''
+
     pitch_classes = {'fastball': ['Riding Fastball', 'Fastball'],
                      'sinker':   ['Sinker'],
                      'breaking': ['Cutter', 'Gyro Slider', 'Two-Plane Slider', 'Carry Slider', 
@@ -935,11 +960,11 @@ def grade_sequence(classified_pitch_data):
     
     
     
-    '''
-    ###############################################################################
-    ############################# Pitch Type Sequence #############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ############################# Pitch Type Sequence #############################
+    # ###############################################################################
+    # '''
     
     # frequency of each outcome by previous pitch
     outcomes = ['foul', 'weak', 'topped', 'under', 'flr_brn', 'solid', 'barrel', 'swstr', 'called_strike', 'ball']
@@ -990,11 +1015,12 @@ def grade_sequence(classified_pitch_data):
     sequence_grades_1 = sequence_grades_1.drop(columns='count')
     
     
-    '''
-    ###############################################################################
-    ############################### Micro Sequences ###############################
-    ###############################################################################
-    '''
+    
+    # '''
+    # ###############################################################################
+    # ############################### Micro Sequences ###############################
+    # ###############################################################################
+    # '''
     
     # define parameters
     RA_small_radius = 0.65  # degrees
@@ -1069,11 +1095,11 @@ def predict_performance(shape_grades, repertoire, spot_grades, slot_grades, sequ
         results_df[['K%', 'BB%', 'SIERA']] = np.nan
 
     
-    '''
-    ###############################################################################
-    ############################# Predict Performance #############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ############################# Predict Performance #############################
+    # ###############################################################################
+    # '''
     
     def normalize(data, desired_mean, desired_std, pop_mean=None, pop_std=None, dtype='Int64'):
         
@@ -1249,11 +1275,11 @@ def predict_performance(shape_grades, repertoire, spot_grades, slot_grades, sequ
 
 def profile_viz(pitcher_grades, shape_by_hand, classified_pitch_data, no_slot, display_mode='Shape', quality='low'):
     
-    '''
-    ###############################################################################
-    ############################# Function Definition #############################
-    ###############################################################################
-    '''
+    # '''
+    # ###############################################################################
+    # ############################# Function Definition #############################
+    # ###############################################################################
+    # '''
     
     def get_data(classified_pitch_data, pitcher_grades):
         
@@ -2492,7 +2518,7 @@ def display_table(stand, query_grades, rep_rhh, rep_lhh):
 @st.cache_data
 def load_data():
     """Load the pitcher data"""
-    all_pitch_data = pd.read_csv('Data/CWS ML Analyst Dataset.csv')
+    all_pitch_data = pd.read_csv('CWS ML Analyst Dataset.csv')
     return all_pitch_data
 
 # Initialize session state
@@ -2534,14 +2560,14 @@ def main():
             st.header("Display Options")
             display_mode = st.radio(
                 "Visualization Mode:",
-                options=['Shape', 'Scouting'],
+                options=['Shape', 'Scouting', 'Breakdown'],
                 index=0,
                 help="Choose how to display the pitcher's grades"
             )
             
             quality = st.radio(
                 "Image Quality:",
-                options=['high', 'low'],
+                options=['low', 'high'],
                 index=0,
                 help="Higher quality takes longer to render"
             )
@@ -2623,7 +2649,7 @@ def main():
                 st.metric("Unique Pitch Types", all_pitch_data['TaggedPitchType'].nunique())
     
     except FileNotFoundError:
-        st.error("❌ Data file 'Data/CWS ML Analyst Dataset.csv' not found. Please ensure it's in the correct directory.")
+        st.error("❌ Data file 'CWS ML Analyst Dataset.csv' not found. Please ensure it's in the correct directory.")
     except Exception as e:
         st.error(f"❌ An error occurred: {str(e)}")
 
