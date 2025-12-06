@@ -62,3 +62,6 @@ The current weights (descriptive/predictive) for 4S+ are:
 
 # Insights (post-2024)
 4S has Josh Hader as the best per-inning pitcher in baseball, and Johnny Cueto as the worst. It expects Alexis Diaz to improve the most from 2024, and Robert Garcia to regress the most (in terms of SIERA).
+
+# App
+A Streamlit app containing data courtesy of the Chicago White Sox is temporarily available at https://4spitching.streamlit.app!
