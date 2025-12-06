@@ -1570,8 +1570,6 @@ def profile_viz(pitcher_grades, shape_by_hand, classified_pitch_data, no_slot, d
         return fig, ax, colordict
 
 
-    ipython = get_ipython()
-    ipython.run_line_magic('matplotlib', 'qt')    
 
     pitcher_data, grades, xrv, performance_data = get_data(classified_pitch_data, pitcher_grades)
     if pitcher_data == 'fail':
@@ -2193,9 +2191,7 @@ def profile_viz(pitcher_grades, shape_by_hand, classified_pitch_data, no_slot, d
     ax_cred.axis('off')
     ax_cred.text(0.5, 0.3, 'Data and visualization are property of Major League Baseball and the San Francisco Giants.', ha='center', va='center', fontsize=10)
     
-    # final display
-    plt.show()
-    return
+    return big_fig
 
 def pitch_splits(df):
     
@@ -2613,10 +2609,21 @@ def main():
             
             with tab1:
                 st.subheader(f"Pitcher Profile: {st.session_state.selected_pitcher}")
-                st.info("Profile visualization would be displayed here")
-                profile_viz(query_grades, query_repertoire, classified_query_data, 
-                            no_slot, display_mode=st.session_state.display_mode, 
-                            quality=st.session_state.quality)
+                
+                fig = profile_viz(
+                    query_grades, 
+                    query_repertoire, 
+                    classified_query_data, 
+                    no_slot, 
+                    display_mode=st.session_state.display_mode, 
+                    quality=st.session_state.quality
+                )
+                
+                if fig is not None:
+                    st.pyplot(fig)
+                    plt.close(fig)  # Clean up to avoid memory issues
+                else:
+                    st.warning("Could not generate profile visualization")
             
             with tab2:
                 st.subheader(f"Splits vs RHH: {st.session_state.selected_pitcher}")
