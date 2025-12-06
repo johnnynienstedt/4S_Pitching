@@ -28,7 +28,9 @@ from scipy.spatial.distance import pdist
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
-
+def load_image_as_base64(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 # Page configuration
 st.set_page_config(
@@ -2534,8 +2536,20 @@ def analyze_pitcher(all_pitch_data, pitcher):
 
 # Main app
 def main():
-    st.markdown('<p class="main-header">⚾ Pitcher Analysis Dashboard</p>', unsafe_allow_html=True)
 
+    logo_base64 = load_image_as_base64("CWS_logo.png")
+
+    st.markdown(
+        f"""
+        <h1 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+            <img src="data:image/png;base64,{logo_base64}" 
+                 style="height: 80px; vertical-align: middle;">
+            4S Pitching Model
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+    
     try:
         # Load data
         all_pitch_data = load_data()
