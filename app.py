@@ -2499,13 +2499,8 @@ def display_table(stand, query_grades, rep_rhh, rep_lhh):
     # Get the table's bounding box in figure coordinates
     bbox = table.get_window_extent(fig.canvas.get_renderer())
     bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
-    
-    # Save using the table's actual bbox
-    fig.savefig(f'Figures/{pitcher}_vs_{stand}.png', bbox_inches=bbox, dpi=300)
-    plt.tight_layout()
-    plt.show()
 
-    return
+    return fig
 
 # Load data
 @st.cache_data
@@ -2608,7 +2603,6 @@ def main():
             tab1, tab2, tab3 = st.tabs(["📊 Profile", "📈 Splits vs RHH", "📈 Splits vs LHH"])
             
             with tab1:
-                st.subheader(f"Pitcher Profile: {st.session_state.selected_pitcher}")
                 
                 fig = profile_viz(
                     query_grades, 
@@ -2626,16 +2620,26 @@ def main():
                     st.warning("Could not generate profile visualization")
             
             with tab2:
-                st.subheader(f"Splits vs RHH: {st.session_state.selected_pitcher}")
-                st.info("RHH splits would be displayed here")
+
                 rep_rhh, rep_lhh = pitch_splits(classified_query_data)
-                display_table('R', query_grades, rep_rhh, rep_lhh)
+                
+                fig = display_table('R', query_grades, rep_rhh, rep_lhh)
+                
+                if fig is not None:
+                    st.pyplot(fig)
+                    plt.close(fig)  # Clean up to avoid memory issues
+                else:
+                    st.warning("Could not generate profile visualization")
             
             with tab3:
-                st.subheader(f"Splits vs LHH: {st.session_state.selected_pitcher}")
-                st.info("LHH splits would be displayed here")
-                rep_rhh, rep_lhh = pitch_splits(classified_query_data)
-                display_table('L', query_grades, rep_rhh, rep_lhh)
+                                
+                fig = display_table('L', query_grades, rep_rhh, rep_lhh)
+                
+                if fig is not None:
+                    st.pyplot(fig)
+                    plt.close(fig)  # Clean up to avoid memory issues
+                else:
+                    st.warning("Could not generate profile visualization")
         
         else:
             # Instructions when no pitcher is selected
