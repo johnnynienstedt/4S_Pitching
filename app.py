@@ -22,7 +22,6 @@ import matplotlib.colors as mcolors
 import matplotlib.patheffects as path_effects
 from PIL import ImageFont
 from numba import jit
-from IPython import get_ipython
 from unidecode import unidecode
 from matplotlib.colors import LinearSegmentedColormap
 from scipy.spatial.distance import pdist
