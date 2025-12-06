@@ -2537,7 +2537,7 @@ def analyze_pitcher(all_pitch_data, pitcher):
 # Main app
 def main():
 
-    logo_base64 = load_image_as_base64("CWS_logo.png")
+    logo_base64 = load_image_as_base64("Data/CWS_logo.png")
 
     st.markdown(
         f"""
