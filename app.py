@@ -40,9 +40,8 @@ st.set_page_config(
 st.markdown("""
     <style>
     .main-header {
-        font-size: 2.5rem;
+        font-size: 6.5rem;
         font-weight: bold;
-        color: #FE5A1D;
         text-align: center;
         padding: 1rem 0;
     }
