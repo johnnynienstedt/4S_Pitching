@@ -9,3 +9,4 @@ scipy
 unidecode
 ipython
 cloudpickle
+sklearn
