@@ -2616,7 +2616,7 @@ def main():
             # No analysis yet
             st.info("👈 Select a pitcher from the sidebar and click 'Analyze Pitcher' to begin")
             st.subheader("Dataset Overview")
-            col1, col2 = st.columns(2)
+            col1, col2, _, _ = st.columns(4)
             col1.metric("Total Pitchers", len(pitchers))
             col2.metric("Total Pitches", len(all_pitch_data))
 
