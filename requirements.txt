@@ -11,3 +11,4 @@ ipython
 cloudpickle
 scikit-learn
 xgboost
+base64
