@@ -2502,164 +2502,133 @@ def display_table(stand, query_grades, rep_rhh, rep_lhh):
 
     return fig
 
+
+
 # Load data
 @st.cache_data
 def load_data():
     """Load the pitcher data"""
-    all_pitch_data = pd.read_csv('Data/CWS ML Analyst Dataset.csv')
-    return all_pitch_data
+    return pd.read_csv('Data/CWS ML Analyst Dataset.csv')
 
-# Initialize session state
-if 'analyzed' not in st.session_state:
-    st.session_state.analyzed = False
-if 'pitcher_grades' not in st.session_state:
-    st.session_state.pitcher_grades = None
+
+# Cached analysis function
+@st.cache_data(show_spinner=False)
+def analyze_pitcher(all_pitch_data, pitcher):
+    """Run the full analysis for a pitcher (expensive computations)."""
+    classified_query_data, results_data = clean_data(all_pitch_data, pitcher=pitcher)
+    query_shape_grades, query_shape_rep = grade_shape(classified_query_data)
+    query_spot_grades = grade_spot(classified_query_data)
+    query_slot_grades, query_slot_info = grade_slot(classified_query_data)
+    query_sequence_grades = grade_sequence(classified_query_data)
+    query_grades, query_repertoire, no_slot = predict_performance(
+        query_shape_grades, query_shape_rep, query_spot_grades,
+        query_slot_grades, query_sequence_grades, results_data
+    )
+    return {
+        "classified_query_data": classified_query_data,
+        "results_data": results_data,
+        "query_grades": query_grades,
+        "query_repertoire": query_repertoire,
+        "no_slot": no_slot
+    }
+
 
 # Main app
 def main():
-    # Header
     st.markdown('<p class="main-header">⚾ Pitcher Analysis Dashboard</p>', unsafe_allow_html=True)
     st.markdown("---")
-    
-    # Load data
+
     try:
+        # Load data
         all_pitch_data = load_data()
-        
-        # Get unique pitchers and format names
-        pitchers = all_pitch_data['Pitcher'].unique()
-        
-        # Sort pitchers alphabetically
-        pitchers = sorted(pitchers)
-        
-        # Sidebar for pitcher selection
+        pitchers = sorted(all_pitch_data['Pitcher'].unique())
+
+        # Sidebar
         with st.sidebar:
             st.header("Pitcher Selection")
-            
-            selected_pitcher = st.selectbox(
-                "Choose a pitcher:",
-                options=pitchers,
-                index=0,
-                help="Select a pitcher to analyze their performance"
-            )
-            
-            st.markdown("---")
-            
-            # Display mode selection
-            st.header("Display Options")
-            display_mode = st.radio(
-                "Visualization Mode:",
-                options=['Shape', 'Scouting'],
-                index=0,
-                help="Choose how to display the pitcher's grades"
-            )
-            
-            quality = st.radio(
-                "Image Quality:",
-                options=['high', 'low'],
-                index=0,
-                help="Higher quality takes longer to render"
-            )
-            
-            st.markdown("---")
-            
-            # Analyze button
-            analyze_button = st.button(
-                "🔍 Analyze Pitcher",
-                type="primary",
-                use_container_width=True
-            )
-        
-        # Main content area
-        if analyze_button:
-            with st.spinner(f'Analyzing {selected_pitcher}...'):
-                try:
-                    # Process pitcher data
-                    classified_query_data, results_data = clean_data(all_pitch_data, pitcher=selected_pitcher)
-                    query_shape_grades, query_shape_rep = grade_shape(classified_query_data)
-                    query_spot_grades = grade_spot(classified_query_data)
-                    query_slot_grades, query_slot_info = grade_slot(classified_query_data)
-                    query_sequence_grades = grade_sequence(classified_query_data)
-                    query_grades, query_repertoire, no_slot = predict_performance(
-                        query_shape_grades, query_shape_rep, query_spot_grades, 
-                        query_slot_grades, query_sequence_grades, results_data
-                    )
-                    
-                    # Store in session state
-                    st.session_state.analyzed = True
-                    st.session_state.selected_pitcher = selected_pitcher
-                    st.session_state.display_mode = display_mode
-                    st.session_state.quality = quality
-                    
-                    st.success(f"✅ Analysis complete for {selected_pitcher}!")
-                    
-                except Exception as e:
-                    st.error(f"Error analyzing pitcher: {str(e)}")
-        
-        # Display results if analysis has been run
-        if st.session_state.analyzed:
-            st.markdown("---")
-            
-            # Create tabs for different visualizations
-            tab1, tab2, tab3 = st.tabs(["📊 Profile", "📈 Splits vs RHH", "📈 Splits vs LHH"])
-            
-            with tab1:
-                
-                fig = profile_viz(
-                    query_grades, 
-                    query_repertoire, 
-                    classified_query_data, 
-                    no_slot, 
-                    display_mode=st.session_state.display_mode, 
-                    quality=st.session_state.quality
-                )
-                
-                if fig is not None:
-                    st.pyplot(fig)
-                    plt.close(fig)  # Clean up to avoid memory issues
-                else:
-                    st.warning("Could not generate profile visualization")
-            
-            with tab2:
+            selected_pitcher = st.selectbox("Choose a pitcher:", options=pitchers, index=0)
 
-                rep_rhh, rep_lhh = pitch_splits(classified_query_data)
-                
+            st.markdown("---")
+            st.header("Display Options")
+            display_mode = st.radio("Visualization Mode:", options=['Shape', 'Scouting'], index=0)
+            quality = st.radio("Image Quality:", options=['high', 'low'], index=0)
+
+            st.markdown("---")
+            analyze_button = st.button("🔍 Analyze Pitcher", type="primary", use_container_width=True)
+
+        # Initialize session_state
+        if 'analyzed' not in st.session_state:
+            st.session_state.analyzed = False
+        if 'selected_pitcher' not in st.session_state:
+            st.session_state.selected_pitcher = None
+        if 'analysis_results' not in st.session_state:
+            st.session_state.analysis_results = None
+
+        # Run analysis only if needed
+        if analyze_button or st.session_state.selected_pitcher != selected_pitcher:
+            with st.spinner(f"Analyzing {selected_pitcher}..."):
+                results = analyze_pitcher(all_pitch_data, selected_pitcher)
+                st.session_state.analyzed = True
+                st.session_state.selected_pitcher = selected_pitcher
+                st.session_state.analysis_results = results
+                st.success(f"✅ Analysis complete for {selected_pitcher}!")
+
+        # Display results
+        if st.session_state.analyzed and st.session_state.analysis_results is not None:
+            results = st.session_state.analysis_results
+            classified_query_data = results["classified_query_data"]
+            query_grades = results["query_grades"]
+            query_repertoire = results["query_repertoire"]
+            no_slot = results["no_slot"]
+
+            st.markdown("---")
+            tab1, tab2, tab3 = st.tabs(["📊 Profile", "📈 Splits vs RHH", "📈 Splits vs LHH"])
+
+            with tab1:
+                fig = profile_viz(
+                    query_grades,
+                    query_repertoire,
+                    classified_query_data,
+                    no_slot,
+                    display_mode=display_mode,
+                    quality=quality
+                )
+                if fig:
+                    st.pyplot(fig)
+                    plt.close(fig)
+                else:
+                    st.warning("Could not generate profile visualization")
+
+            rep_rhh, rep_lhh = pitch_splits(classified_query_data)
+            with tab2:
                 fig = display_table('R', query_grades, rep_rhh, rep_lhh)
-                
-                if fig is not None:
+                if fig:
                     st.pyplot(fig)
-                    plt.close(fig)  # Clean up to avoid memory issues
+                    plt.close(fig)
                 else:
-                    st.warning("Could not generate profile visualization")
-            
+                    st.warning("Could not generate splits visualization")
             with tab3:
-                                
                 fig = display_table('L', query_grades, rep_rhh, rep_lhh)
-                
-                if fig is not None:
+                if fig:
                     st.pyplot(fig)
-                    plt.close(fig)  # Clean up to avoid memory issues
+                    plt.close(fig)
                 else:
-                    st.warning("Could not generate profile visualization")
-        
+                    st.warning("Could not generate splits visualization")
+
         else:
-            # Instructions when no pitcher is selected
+            # No analysis yet
             st.info("👈 Select a pitcher from the sidebar and click 'Analyze Pitcher' to begin")
-            
-            # Show sample stats
             st.subheader("Dataset Overview")
             col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("Total Pitchers", len(pitchers))
-            with col2:
-                st.metric("Total Pitches", len(all_pitch_data))
-            with col3:
-                st.metric("Unique Pitch Types", all_pitch_data['TaggedPitchType'].nunique())
-    
+            col1.metric("Total Pitchers", len(pitchers))
+            col2.metric("Total Pitches", len(all_pitch_data))
+            col3.metric("Unique Pitch Types", all_pitch_data['TaggedPitchType'].nunique())
+
     except FileNotFoundError:
         st.error("❌ Data file 'Data/CWS ML Analyst Dataset.csv' not found. Please ensure it's in the correct directory.")
     except Exception as e:
         st.error(f"❌ An error occurred: {str(e)}")
+
 
 if __name__ == "__main__":
     main()
