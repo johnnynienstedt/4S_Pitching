@@ -10,3 +10,4 @@ unidecode
 ipython
 cloudpickle
 scikit-learn
+xgboost
