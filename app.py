@@ -2104,7 +2104,7 @@ def profile_viz(pitcher_grades, shape_by_hand, classified_pitch_data, no_slot, d
             
             
         ax_cred.axis('off')
-        ax_cred.text(0.5, 0.3, 'Data and visualization are property of Major League Baseball and the San Francisco Giants.', ha='center', va='center', fontsize=10)
+        ax_cred.text(0.5, 0.3, 'Data and visualization are property of Major League Baseball and the Chicago White Sox.', ha='center', va='center', fontsize=10)
         plt.show()
         return
         
@@ -2189,7 +2189,7 @@ def profile_viz(pitcher_grades, shape_by_hand, classified_pitch_data, no_slot, d
     #
     
     ax_cred.axis('off')
-    ax_cred.text(0.5, 0.3, 'Data and visualization are property of Major League Baseball and the San Francisco Giants.', ha='center', va='center', fontsize=10)
+    ax_cred.text(0.5, 0.3, 'Data and visualization are property of Major League Baseball and the Chicago White Sox.', ha='center', va='center', fontsize=10)
     
     return big_fig
 
