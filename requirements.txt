@@ -7,7 +7,6 @@ numba
 Pillow
 scipy
 unidecode
-ipython
 cloudpickle
 scikit-learn
 xgboost
