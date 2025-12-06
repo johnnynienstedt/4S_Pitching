@@ -2542,39 +2542,33 @@ def main():
         # Load data
         all_pitch_data = load_data()
         pitchers = sorted(all_pitch_data['Pitcher'].unique())
-
-        # Sidebar
-        with st.sidebar:
-            st.header("Pitcher Selection")
-            selected_pitcher = st.selectbox("Choose a pitcher:", options=pitchers, index=0)
-
-            st.markdown("---")
-            st.header("Display Options")
-            display_mode = st.radio("Visualization Mode:", options=['Shape', 'Scouting'], index=0, help="Scouting: Pitch velo, movement, scouting grade\nShape: Usage and Shape+ split by handedness")
-            quality = st.radio("Image Quality:", options=['high', 'low'], index=0)
-
-            st.markdown("---")
-            analyze_button = st.button("🔍 Analyze Pitcher", type="primary", use_container_width=True)
-
-        # Initialize session_state
+        
+        # Initialize session state
         if 'analyzed' not in st.session_state:
             st.session_state.analyzed = False
         if 'selected_pitcher' not in st.session_state:
             st.session_state.selected_pitcher = None
         if 'analysis_results' not in st.session_state:
             st.session_state.analysis_results = None
-
-        # Run analysis only if needed
-        if analyze_button or st.session_state.selected_pitcher != selected_pitcher:
+        
+        # Sidebar controls
+        with st.sidebar:
+            selected_pitcher = st.selectbox("Choose a pitcher:", options=pitchers, index=0)
+            display_mode = st.radio("Visualization Mode:", options=['Shape', 'Scouting'], index=0, help='Toggle stats displayed in repertoire table')
+            quality = st.radio("Image Quality:", options=['high', 'low'], index=0)
+            analyze_button = st.button("🔍 Analyze Pitcher", type="primary", use_container_width=True)
+        
+        # Run analysis only when button is clicked
+        if analyze_button:
             with st.spinner(f"Analyzing {selected_pitcher}..."):
                 results = analyze_pitcher(all_pitch_data, selected_pitcher)
                 st.session_state.analyzed = True
                 st.session_state.selected_pitcher = selected_pitcher
                 st.session_state.analysis_results = results
                 st.success(f"✅ Analysis complete for {selected_pitcher}!")
-
-        # Display results
-        if st.session_state.analyzed and st.session_state.analysis_results is not None:
+        
+        # Display results if analysis has already been run
+        if st.session_state.analyzed and st.session_state.analysis_results:
             results = st.session_state.analysis_results
             classified_query_data = results["classified_query_data"]
             query_grades = results["query_grades"]
