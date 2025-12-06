@@ -6,7 +6,7 @@ Created on Wed Nov  5 22:07:35 2025
 """
 
 #
-# Modified 4S - CHW
+# Modified 4S - CWS data with Streamlit functionality
 #
 # Johnny Nienstedt 12/5/2025
 #
@@ -2516,7 +2516,7 @@ def display_table(stand, query_grades, rep_rhh, rep_lhh):
 @st.cache_data
 def load_data():
     """Load the pitcher data"""
-    all_pitch_data = pd.read_csv('CWS ML Analyst Dataset.csv')
+    all_pitch_data = pd.read_csv('Data/CWS ML Analyst Dataset.csv')
     return all_pitch_data
 
 # Initialize session state
@@ -2647,7 +2647,7 @@ def main():
                 st.metric("Unique Pitch Types", all_pitch_data['TaggedPitchType'].nunique())
     
     except FileNotFoundError:
-        st.error("❌ Data file 'CWS ML Analyst Dataset.csv' not found. Please ensure it's in the correct directory.")
+        st.error("❌ Data file 'Data/CWS ML Analyst Dataset.csv' not found. Please ensure it's in the correct directory.")
     except Exception as e:
         st.error(f"❌ An error occurred: {str(e)}")
 
