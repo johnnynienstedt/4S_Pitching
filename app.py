@@ -2506,7 +2506,7 @@ def display_table(stand, query_grades, rep_rhh, rep_lhh):
 @st.cache_data
 def load_data():
     """Load the pitcher data"""
-    return pd.read_csv('Data/CWS ML Analyst Dataset.csv')
+    return pd.read_csv('Data/20260206-CamelbackWhiteSox-Private-1_unverified.csv')
 
 
 # Cached analysis function
